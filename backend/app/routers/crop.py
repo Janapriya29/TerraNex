@@ -129,13 +129,18 @@ def recommend_with_market(data: UserCropInput):
         recommendations
     )
 
-    # STEP 3: FIND BEST CROP
+    
+    # STEP 3: FIND BEST CROP BASED ON AI CONFIDENCE
 
     best_overall_crop = None
 
-    if market_analysis:
-        best_overall_crop = market_analysis[0]["crop"]
+    if recommendations:
+        best_recommendation = max(
+            recommendations,
+            key=lambda item: float(item.get("confidence", 0))
+        )
 
+        best_overall_crop = best_recommendation["crop"]
     # STEP 4: SAVE HISTORY
 
     history_data = {
