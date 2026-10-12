@@ -172,7 +172,7 @@ function DiseaseDetection() {
           onClick={() => navigate("/dashboard")}
         >
           <Sprout size={28} />
-          <span>AgriVoice</span>
+          <span>TerraNex</span>
         </div>
 
         <button
@@ -336,7 +336,7 @@ function DiseaseDetection() {
 
                 <p className="result-description">
                   This prediction has been saved to your
-                  AgriVoice history.
+                  TerraNex history.
                 </p>
 
 

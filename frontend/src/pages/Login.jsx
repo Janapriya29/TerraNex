@@ -101,7 +101,7 @@ function Login() {
             <Sprout size={32} />
 
             <span>
-              AgriVoice
+              TerraNex
             </span>
           </Link>
 

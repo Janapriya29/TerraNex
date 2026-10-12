@@ -115,7 +115,7 @@ function CropRecommendation() {
           onClick={() => navigate("/dashboard")}
         >
           <Sprout size={28} />
-          <span>AgriVoice</span>
+          <span>TerraNex</span>
         </div>
 
         <button
@@ -520,7 +520,7 @@ function CropRecommendation() {
 
                 <p className="result-description">
                   This recommendation and market analysis
-                  have been saved to your AgriVoice history.
+                  have been saved to your TerraNex history.
                 </p>
 
               </div>

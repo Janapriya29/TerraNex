@@ -115,7 +115,7 @@ function MarketAnalysis() {
           onClick={() => navigate("/dashboard")}
         >
           <Sprout size={28} />
-          <span>AgriVoice</span>
+          <span>TerraNex</span>
         </div>
 
         <button

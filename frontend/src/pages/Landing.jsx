@@ -10,7 +10,7 @@ function Landing() {
       <nav className="navbar">
         <div className="logo">
           <Sprout size={32} />
-          <span>AgriVoice</span>
+          <span>TerraNex</span>
         </div>
 
         <div className="nav-links">
@@ -39,7 +39,7 @@ function Landing() {
           </h1>
 
           <p>
-            AgriVoice helps farmers make smarter agricultural decisions
+            TerraNex helps farmers make smarter agricultural decisions
             using Artificial Intelligence, crop recommendation, disease
             prediction and market analysis.
           </p>
@@ -144,7 +144,7 @@ function Landing() {
           background: "#f7fbf7"
         }}
       >
-        <h2>About AgriVoice</h2>
+        <h2>About TerraNex</h2>
 
         <p
           style={{
@@ -154,7 +154,7 @@ function Landing() {
             color: "#617468"
           }}
         >
-          AgriVoice is an AI-powered smart agriculture platform designed
+          TerraNex is an AI-powered smart agriculture platform designed
           to help farmers choose suitable crops, detect plant diseases,
           and analyze market opportunities using intelligent technology.
         </p>

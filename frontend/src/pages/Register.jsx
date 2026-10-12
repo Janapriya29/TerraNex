@@ -49,10 +49,10 @@ function Register() {
         <div className="auth-brand">
           <Link to="/" className="auth-logo">
             <Sprout size={32} />
-            <span>AgriVoice</span>
+            <span>TerraNex</span>
           </Link>
 
-          <h1>Join AgriVoice</h1>
+          <h1>Join TerraNex</h1>
 
           <p>
             Create your account and start making smarter farming decisions.

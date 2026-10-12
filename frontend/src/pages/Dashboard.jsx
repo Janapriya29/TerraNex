@@ -120,7 +120,7 @@ function Dashboard() {
 
         <div className="dashboard-logo">
           <Sprout size={30} />
-          <span>AgriVoice</span>
+          <span>TerraNex</span>
         </div>
 
         <div className="dashboard-user">
