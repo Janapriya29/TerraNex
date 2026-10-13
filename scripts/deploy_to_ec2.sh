@@ -10,16 +10,49 @@ echo "===================================================================="
 echo " Starting Safe TerraNex Production Deployment"
 echo "===================================================================="
 
-# 1. Pre-flight Safety Checks: Verify AlzheimerML Status
-echo "[1/6] Verifying existing services on host..."
+# 0. Repository Location and Git Commit Verification
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+cd "${REPO_DIR}"
+echo "[1/7] Repository verification..."
+echo "  Working Directory: ${REPO_DIR}"
+CURRENT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+echo "  Current Commit: ${CURRENT_COMMIT}"
+
+# 1. Environment Configuration Check (Fail fast before touching any host services)
+echo "[2/7] Checking environment configuration (.env)..."
+if [ ! -f ".env" ]; then
+    echo "  [ERROR] .env file not found in ${REPO_DIR}!"
+    echo "  Please create .env containing your production Atlas settings before deploying."
+    exit 1
+fi
+
+if ! grep -E '^[[:space:]]*MONGODB_URL=mongodb(\+srv)?://' .env > /dev/null; then
+    echo "  [ERROR] MONGODB_URL is missing or invalid in .env! Must begin with mongodb:// or mongodb+srv://"
+    exit 1
+fi
+echo "  [OK] Valid MONGODB_URL format detected in .env (secrets masked)."
+
+if ! grep -E '^[[:space:]]*REQUIRE_MONGODB=true' .env > /dev/null; then
+    echo "  [NOTE] Appending REQUIRE_MONGODB=true to .env for production safety."
+    echo "REQUIRE_MONGODB=true" >> .env
+fi
+echo "  [OK] REQUIRE_MONGODB=true confirmed."
+
+TARGET_PORT=$(grep -E '^[[:space:]]*FRONTEND_PORT=' .env | head -n 1 | cut -d= -f2 | tr -d ' "\r' || true)
+FRONTEND_PORT=${TARGET_PORT:-80}
+echo "  Configured frontend port: ${FRONTEND_PORT}"
+
+# 2. Existing Services Pre-flight Check (Verify AlzheimerML Status)
+echo "[3/7] Verifying existing services on host..."
 if sudo ss -tulpn | grep -q ":5001"; then
-    echo "  [OK] AlzheimerML service is active on port 5001. We will NOT touch it."
+    echo "  [OK] AlzheimerML service is active on port 5001. We will NOT touch or modify it."
 else
     echo "  [NOTE] Port 5001 is not currently listening. Continuing safely."
 fi
 
-# 2. Disk Space Pre-Check & Option 2 Capacity Optimization
-echo "[2/6] Checking storage and optimizing host capacity..."
+# 3. Disk Space Pre-Check & Option 2 Capacity Optimization
+echo "[4/7] Checking storage and optimizing host capacity (Option 2)..."
 FREE_DISK_KB=$(df / --output=avail | tail -n 1)
 FREE_DISK_GB=$((FREE_DISK_KB / 1024 / 1024))
 echo "  Available Root Disk: ${FREE_DISK_GB} GB"
@@ -55,33 +88,16 @@ fi
 
 free -h
 
-# 3. Environment Configuration Check
-echo "[3/6] Checking environment configuration (.env)..."
-if [ ! -f ".env" ]; then
-    echo "  [ERROR] .env file not found!"
-    echo "  Please create a .env file containing your production settings."
-    echo "  Example:"
-    echo "    MONGODB_URL=mongodb+srv://<user>:<password>@cluster0.abcde.mongodb.net/TerraNex?retryWrites=true&w=majority"
-    echo "    FRONTEND_PORT=80"
-    echo "    CORS_ORIGINS=http://localhost,http://localhost:80"
-    exit 1
-fi
-
-# Extract FRONTEND_PORT from .env (defaults to 80 if not specified)
-TARGET_PORT=$(grep -E '^[[:space:]]*FRONTEND_PORT=' .env | head -n 1 | cut -d= -f2 | tr -d ' "\r' || true)
-FRONTEND_PORT=${TARGET_PORT:-80}
-echo "  Target frontend port: ${FRONTEND_PORT}"
-
 # 4. Pull Prebuilt Images from GHCR (Zero on-server compilation)
-echo "[4/6] Pulling prebuilt images from GitHub Container Registry..."
+echo "[5/7] Pulling prebuilt images from GitHub Container Registry..."
 docker compose -f docker-compose.prod.yml pull
 
 # 5. Launch Isolated TerraNex Containers
-echo "[5/6] Starting TerraNex container stack..."
+echo "[6/7] Starting TerraNex container stack..."
 docker compose -f docker-compose.prod.yml up -d
 
 # 6. Post-deployment Health & Coexistence Verification
-echo "[6/6] Verifying health and service isolation..."
+echo "[7/7] Verifying health and service isolation..."
 sleep 5
 docker compose -f docker-compose.prod.yml ps
 
