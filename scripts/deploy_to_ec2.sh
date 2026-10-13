@@ -39,6 +39,30 @@ if ! grep -E '^[[:space:]]*REQUIRE_MONGODB=true' .env > /dev/null; then
 fi
 echo "  [OK] REQUIRE_MONGODB=true confirmed."
 
+# Test live Atlas connectivity privately if python3 and pymongo are available
+if command -v python3 >/dev/null 2>&1 && python3 -c "import pymongo" >/dev/null 2>&1; then
+    echo "  [ACTION] Verifying live Atlas connectivity from host environment (read-only)..."
+    python3 -c "
+import sys
+from pymongo import MongoClient
+
+with open('.env', 'r') as f:
+    for line in f:
+        if line.strip().startswith('MONGODB_URL='):
+            url = line.strip().split('=', 1)[1].strip('\"\'')
+            break
+try:
+    c = MongoClient(url, serverSelectionTimeoutMS=8000)
+    c.admin.command('ping')
+    print('  [OK] Live Atlas connectivity verified to TerraNex DB.')
+except Exception as e:
+    print('  [ERROR] Live Atlas connection failed:', type(e).__name__)
+    sys.exit(1)
+"
+else
+    echo "  [NOTE] Host Python pymongo not present; backend container will test Atlas connectivity on launch."
+fi
+
 TARGET_PORT=$(grep -E '^[[:space:]]*FRONTEND_PORT=' .env | head -n 1 | cut -d= -f2 | tr -d ' "\r' || true)
 FRONTEND_PORT=${TARGET_PORT:-80}
 echo "  Configured frontend port: ${FRONTEND_PORT}"
@@ -51,8 +75,8 @@ else
     echo "  [NOTE] Port 5001 is not currently listening. Continuing safely."
 fi
 
-# 3. Disk Space Pre-Check & Option 2 Capacity Optimization
-echo "[4/7] Checking storage and optimizing host capacity (Option 2)..."
+# 3. Disk Space Pre-Check
+echo "[4/7] Checking storage and recalculating headroom..."
 FREE_DISK_KB=$(df / --output=avail | tail -n 1)
 FREE_DISK_GB=$((FREE_DISK_KB / 1024 / 1024))
 echo "  Available Root Disk: ${FREE_DISK_GB} GB"
@@ -60,6 +84,29 @@ if [ "$FREE_DISK_GB" -lt 4 ]; then
     echo "  [ABORT] Insufficient disk space: only ${FREE_DISK_GB} GB available."
     echo "  At least 4 GB free disk is required to safely provision swap and pull images."
     exit 1
+fi
+
+echo "===================================================================="
+echo " Final Pre-Deployment Action Summary"
+echo "===================================================================="
+echo " • Repository Path:       ${REPO_DIR}"
+echo " • Commit ID:             ${CURRENT_COMMIT}"
+echo " • Target Images:         ghcr.io/janapriya29/terranex-frontend:latest"
+echo "                          ghcr.io/janapriya29/terranex-backend:latest"
+echo " • Memory Optimization:   Pause Minikube (~1.1 GB RAM freed) + 2 GB Swap"
+echo " • Service Isolation:     AlzheimerML (port 5001) will NOT be touched"
+echo " • Target Web Port:       ${FRONTEND_PORT}"
+echo "===================================================================="
+
+# Interactive confirmation prompt before host mutation (unless -y / --yes is passed)
+if [ "${1:-}" != "-y" ] && [ "${1:-}" != "--yes" ]; then
+    if [ -t 0 ]; then
+        read -r -p "Approve and execute Option 2 deployment on this host? (y/N): " CONFIRM
+        if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+            echo "Deployment aborted by user. Zero host changes made."
+            exit 0
+        fi
+    fi
 fi
 
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -q -i "minikube"; then
