@@ -15,7 +15,11 @@ import History from "./pages/History";
 // =====================================
 
 function isLoggedIn() {
-  return Boolean(localStorage.getItem("user_id"));
+  const uid = localStorage.getItem("user_id");
+  if (!uid || uid === "undefined" || uid === "null" || uid.trim() === "") {
+    return false;
+  }
+  return /^[0-9a-fA-F]{24}$/.test(uid.trim());
 }
 
 
@@ -24,8 +28,14 @@ function isLoggedIn() {
 // =====================================
 
 function ProtectedRoute({ children }) {
-
   if (!isLoggedIn()) {
+    try {
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("user_name");
+      localStorage.removeItem("user_email");
+    } catch {
+      // Ignore
+    }
     return <Navigate to="/login" replace />;
   }
 
@@ -38,7 +48,6 @@ function ProtectedRoute({ children }) {
 // =====================================
 
 function PublicRoute({ children }) {
-
   if (isLoggedIn()) {
     return <Navigate to="/dashboard" replace />;
   }

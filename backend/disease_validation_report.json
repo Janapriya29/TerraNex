@@ -1,0 +1,411 @@
+{
+  "metadata": {
+    "timestamp": "2026-10-12 19:43:36",
+    "model_path": "C:\\Users\\janap\\Desktop\\TerraNex-GitHub\\models\\crop_disease_model.keras",
+    "model_type": "MobileNetV2 (Transfer Learning, Frozen Base)",
+    "input_shape": [
+      224,
+      224,
+      3
+    ],
+    "preprocessing": "Internal Rescaling(scale=1/127.5, offset=-1.0)",
+    "output_classes": 8,
+    "class_names": [
+      "Tomato___Bacterial_spot",
+      "Tomato___Early_blight",
+      "Tomato___Late_blight",
+      "Tomato___healthy",
+      "Potato___Early_blight",
+      "Potato___Late_blight",
+      "Pepper,_bell___Bacterial_spot",
+      "Pepper,_bell___healthy"
+    ],
+    "dataset_split": "PlantVillage/val",
+    "evaluation_duration_seconds": 33.35,
+    "validation_role_in_training": "Used as validation_data for EarlyStopping checkpoint selection in notebooks/02_crop_disease_prediction.ipynb (not isolated test set)"
+  },
+  "overall_metrics": {
+    "total_images": 2220,
+    "correct_predictions": 2130,
+    "incorrect_predictions": 90,
+    "accuracy_pct": 95.95
+  },
+  "confidence_statistics": {
+    "overall": {
+      "mean": 94.07,
+      "median": 99.28,
+      "min": 31.97,
+      "max": 100.0,
+      "std": 11.62
+    },
+    "correct_predictions": {
+      "count": 2130,
+      "mean": 95.25,
+      "median": 99.4,
+      "min": 31.97,
+      "max": 100.0,
+      "std": 9.73
+    },
+    "incorrect_predictions": {
+      "count": 90,
+      "mean": 65.99,
+      "median": 63.36,
+      "min": 35.0,
+      "max": 99.88,
+      "std": 16.29
+    }
+  },
+  "per_class_metrics": {
+    "Tomato___Bacterial_spot": {
+      "index": 0,
+      "total_images": 425,
+      "correct_predictions": 411,
+      "incorrect_predictions": 14,
+      "accuracy_pct": 96.71,
+      "precision_pct": 98.33,
+      "recall_pct": 96.71,
+      "f1_score": 0.9751,
+      "mean_confidence": 93.24,
+      "median_confidence": 98.06,
+      "min_confidence": 45.02,
+      "max_confidence": 100.0,
+      "std_confidence": 11.27
+    },
+    "Tomato___Early_blight": {
+      "index": 1,
+      "total_images": 200,
+      "correct_predictions": 167,
+      "incorrect_predictions": 33,
+      "accuracy_pct": 83.5,
+      "precision_pct": 83.92,
+      "recall_pct": 83.5,
+      "f1_score": 0.8371,
+      "mean_confidence": 82.0,
+      "median_confidence": 87.53,
+      "min_confidence": 35.0,
+      "max_confidence": 99.88,
+      "std_confidence": 15.79
+    },
+    "Tomato___Late_blight": {
+      "index": 2,
+      "total_images": 382,
+      "correct_predictions": 350,
+      "incorrect_predictions": 32,
+      "accuracy_pct": 91.62,
+      "precision_pct": 93.83,
+      "recall_pct": 91.62,
+      "f1_score": 0.9272,
+      "mean_confidence": 90.06,
+      "median_confidence": 98.07,
+      "min_confidence": 35.27,
+      "max_confidence": 100.0,
+      "std_confidence": 15.33
+    },
+    "Tomato___healthy": {
+      "index": 3,
+      "total_images": 318,
+      "correct_predictions": 318,
+      "incorrect_predictions": 0,
+      "accuracy_pct": 100.0,
+      "precision_pct": 98.15,
+      "recall_pct": 100.0,
+      "f1_score": 0.9907,
+      "mean_confidence": 99.47,
+      "median_confidence": 99.98,
+      "min_confidence": 75.64,
+      "max_confidence": 100.0,
+      "std_confidence": 2.37
+    },
+    "Potato___Early_blight": {
+      "index": 4,
+      "total_images": 200,
+      "correct_predictions": 197,
+      "incorrect_predictions": 3,
+      "accuracy_pct": 98.5,
+      "precision_pct": 98.99,
+      "recall_pct": 98.5,
+      "f1_score": 0.9875,
+      "mean_confidence": 97.72,
+      "median_confidence": 99.85,
+      "min_confidence": 48.43,
+      "max_confidence": 100.0,
+      "std_confidence": 7.15
+    },
+    "Potato___Late_blight": {
+      "index": 5,
+      "total_images": 200,
+      "correct_predictions": 196,
+      "incorrect_predictions": 4,
+      "accuracy_pct": 98.0,
+      "precision_pct": 94.69,
+      "recall_pct": 98.0,
+      "f1_score": 0.9631,
+      "mean_confidence": 96.07,
+      "median_confidence": 99.64,
+      "min_confidence": 31.97,
+      "max_confidence": 100.0,
+      "std_confidence": 9.56
+    },
+    "Pepper,_bell___Bacterial_spot": {
+      "index": 6,
+      "total_images": 200,
+      "correct_predictions": 199,
+      "incorrect_predictions": 1,
+      "accuracy_pct": 99.5,
+      "precision_pct": 96.6,
+      "recall_pct": 99.5,
+      "f1_score": 0.9803,
+      "mean_confidence": 96.69,
+      "median_confidence": 99.47,
+      "min_confidence": 49.38,
+      "max_confidence": 100.0,
+      "std_confidence": 6.88
+    },
+    "Pepper,_bell___healthy": {
+      "index": 7,
+      "total_images": 295,
+      "correct_predictions": 292,
+      "incorrect_predictions": 3,
+      "accuracy_pct": 98.98,
+      "precision_pct": 99.32,
+      "recall_pct": 98.98,
+      "f1_score": 0.9915,
+      "mean_confidence": 97.19,
+      "median_confidence": 99.56,
+      "min_confidence": 53.61,
+      "max_confidence": 100.0,
+      "std_confidence": 6.78
+    }
+  },
+  "confusion_matrix": {
+    "classes": [
+      "Tomato___Bacterial_spot",
+      "Tomato___Early_blight",
+      "Tomato___Late_blight",
+      "Tomato___healthy",
+      "Potato___Early_blight",
+      "Potato___Late_blight",
+      "Pepper,_bell___Bacterial_spot",
+      "Pepper,_bell___healthy"
+    ],
+    "matrix": [
+      [
+        411,
+        7,
+        4,
+        0,
+        0,
+        0,
+        2,
+        1
+      ],
+      [
+        7,
+        167,
+        15,
+        4,
+        2,
+        4,
+        0,
+        1
+      ],
+      [
+        0,
+        25,
+        350,
+        1,
+        0,
+        4,
+        2,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        318,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        197,
+        3,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        3,
+        1,
+        0,
+        196,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        199,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        292
+      ]
+    ]
+  },
+  "unsupported_species_evaluation": {
+    "Potato___healthy": {
+      "tested_count": 31,
+      "mean_confidence": 75.03,
+      "median_confidence": 75.94,
+      "min_confidence": 37.78,
+      "max_confidence": 99.21,
+      "assigned_distribution": {
+        "Potato___Late_blight": 19,
+        "Tomato___healthy": 10,
+        "Pepper,_bell___healthy": 2
+      }
+    },
+    "Apple___healthy": {
+      "tested_count": 50,
+      "mean_confidence": 78.71,
+      "median_confidence": 85.87,
+      "min_confidence": 31.21,
+      "max_confidence": 99.82,
+      "assigned_distribution": {
+        "Tomato___healthy": 31,
+        "Tomato___Bacterial_spot": 2,
+        "Potato___Late_blight": 8,
+        "Pepper,_bell___healthy": 9
+      }
+    },
+    "Corn_(maize)___healthy": {
+      "tested_count": 50,
+      "mean_confidence": 87.97,
+      "median_confidence": 93.32,
+      "min_confidence": 45.21,
+      "max_confidence": 99.98,
+      "assigned_distribution": {
+        "Tomato___Late_blight": 33,
+        "Pepper,_bell___healthy": 17
+      }
+    },
+    "Grape___Black_rot": {
+      "tested_count": 50,
+      "mean_confidence": 76.6,
+      "median_confidence": 81.0,
+      "min_confidence": 29.28,
+      "max_confidence": 99.82,
+      "assigned_distribution": {
+        "Tomato___Early_blight": 41,
+        "Tomato___Bacterial_spot": 4,
+        "Potato___Early_blight": 3,
+        "Tomato___healthy": 2
+      }
+    },
+    "Soybean___healthy": {
+      "tested_count": 50,
+      "mean_confidence": 71.85,
+      "median_confidence": 70.01,
+      "min_confidence": 32.91,
+      "max_confidence": 99.56,
+      "assigned_distribution": {
+        "Tomato___healthy": 21,
+        "Tomato___Bacterial_spot": 2,
+        "Pepper,_bell___healthy": 19,
+        "Potato___Late_blight": 5,
+        "Tomato___Late_blight": 1,
+        "Potato___Early_blight": 1,
+        "Pepper,_bell___Bacterial_spot": 1
+      }
+    }
+  },
+  "synthetic_and_stress_tests": {
+    "Solid_Black": {
+      "predicted_class": "Tomato___Late_blight",
+      "confidence": 99.93,
+      "softmax_vector": [
+        0.0003,
+        0.0001,
+        0.9993,
+        0.0003,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "Solid_White": {
+      "predicted_class": "Tomato___Late_blight",
+      "confidence": 96.64,
+      "softmax_vector": [
+        0.0009,
+        0.0055,
+        0.9664,
+        0.0085,
+        0.0,
+        0.0,
+        0.0,
+        0.0188
+      ]
+    },
+    "Random_Noise": {
+      "predicted_class": "Tomato___healthy",
+      "confidence": 99.97,
+      "softmax_vector": [
+        0.0,
+        0.0,
+        0.0,
+        0.9997,
+        0.0,
+        0.0,
+        0.0,
+        0.0002
+      ]
+    },
+    "Blurry_Leaf_Sigma5": {
+      "tested": 10,
+      "mean_confidence": 94.05,
+      "min_confidence": 74.62,
+      "max_confidence": 99.82
+    },
+    "Blurry_Leaf_Sigma10": {
+      "tested": 10,
+      "mean_confidence": 67.85,
+      "min_confidence": 54.66,
+      "max_confidence": 81.69
+    },
+    "Multi_Leaf_Composite": {
+      "predicted_class": "Tomato___Late_blight",
+      "confidence": 68.07,
+      "top2_classes": [
+        [
+          "Tomato___Late_blight",
+          68.07
+        ],
+        [
+          "Tomato___Early_blight",
+          18.42
+        ]
+      ]
+    }
+  }
+}

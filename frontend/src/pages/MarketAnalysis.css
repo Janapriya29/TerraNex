@@ -4,8 +4,9 @@
 
 .market-page {
   min-height: 100vh;
-  background: #f4f8f4;
-  color: #1f2d24;
+  background: var(--color-bg-page);
+  color: var(--color-text-main);
+  font-family: var(--font-body);
 }
 
 /* ================================
@@ -14,8 +15,8 @@
 
 .market-navbar {
   height: 72px;
-  background: white;
-  border-bottom: 1px solid #e3ebe4;
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -26,29 +27,36 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #2f7d46;
+  color: var(--color-primary);
   font-size: 22px;
   font-weight: 700;
   cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.market-logo:hover {
+  opacity: 0.85;
 }
 
 .market-back-btn {
-  border: none;
-  background: #edf6ef;
-  color: #2f7d46;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-main);
   padding: 10px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   gap: 7px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: 0.2s;
+  transition: var(--transition-fast);
 }
 
 .market-back-btn:hover {
-  background: #dcefe0;
+  background: var(--color-mint);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 /* ================================
@@ -56,8 +64,7 @@
 ================================ */
 
 .market-content {
-  width: 88%;
-  max-width: 1200px;
+  width: min(1200px, 92%);
   margin: auto;
   padding: 45px 0 70px;
 }
@@ -77,21 +84,25 @@
   width: 64px;
   height: 64px;
   border-radius: 16px;
-  background: #dff1e3;
-  color: #2f7d46;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .market-heading h1 {
   margin: 0 0 7px;
   font-size: 32px;
+  font-family: var(--font-heading);
+  color: var(--color-text-main);
 }
 
 .market-heading p {
   margin: 0;
-  color: #66756a;
+  color: var(--color-text-muted);
   font-size: 15px;
 }
 
@@ -100,22 +111,24 @@
 ================================ */
 
 .market-message {
-  background: white;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
   padding: 35px;
   text-align: center;
-  border-radius: 16px;
-  color: #66756a;
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
 }
 
 .market-error {
-  background: #fff3f3;
-  border: 1px solid #f1caca;
-  color: #b42318;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
   padding: 18px 20px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   gap: 10px;
+  font-weight: 500;
 }
 
 /* ================================
@@ -123,25 +136,26 @@
 ================================ */
 
 .best-crop-card {
-  background: linear-gradient(135deg, #2f7d46, #4b9660);
-  color: white;
-  border-radius: 20px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: #ffffff;
+  border-radius: var(--radius-xl);
   padding: 30px;
   display: flex;
   align-items: center;
   gap: 22px;
   margin-bottom: 35px;
-  box-shadow: 0 10px 30px rgba(47, 125, 70, 0.16);
+  box-shadow: var(--shadow-lg);
 }
 
 .best-crop-icon {
   width: 68px;
   height: 68px;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .best-crop-card p {
@@ -149,17 +163,19 @@
   font-size: 12px;
   letter-spacing: 1.2px;
   font-weight: 700;
+  opacity: 0.9;
 }
 
 .best-crop-card h2 {
   margin: 0 0 5px;
   font-size: 30px;
   text-transform: capitalize;
+  color: #ffffff;
 }
 
 .best-crop-card span {
   font-size: 14px;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 /* ================================
@@ -167,11 +183,12 @@
 ================================ */
 
 .market-section {
-  background: white;
-  border-radius: 18px;
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
   padding: 28px;
   margin-bottom: 30px;
-  border: 1px solid #e5ede6;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .section-header {
@@ -179,18 +196,18 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 25px;
-  color: #2f7d46;
+  color: var(--color-primary);
 }
 
 .section-header h2 {
   margin: 0 0 5px;
-  color: #1f2d24;
+  color: var(--color-text-main);
   font-size: 21px;
 }
 
 .section-header p {
   margin: 0;
-  color: #728076;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
@@ -200,35 +217,42 @@
 
 .recommendation-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 18px;
 }
 
 .recommendation-card {
-  border: 1px solid #e2ebe4;
-  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fafdfb;
+  background: var(--color-bg-elevated);
+  transition: var(--transition-fast);
+}
+
+.recommendation-card:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
 }
 
 .recommendation-card h3 {
   margin: 0 0 5px;
   text-transform: capitalize;
   font-size: 18px;
+  color: var(--color-text-main);
 }
 
 .recommendation-card p {
   margin: 0;
-  color: #7a877e;
+  color: var(--color-text-muted);
   font-size: 13px;
 }
 
 .recommendation-card strong {
   font-size: 20px;
-  color: #2f7d46;
+  color: var(--color-primary);
 }
 
 /* ================================
@@ -256,37 +280,43 @@
 }
 
 .market-table-header {
-  background: #edf6ef;
+  background: var(--color-bg-elevated);
   padding: 14px 16px;
-  border-radius: 10px;
-  color: #45614d;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
   font-size: 13px;
   font-weight: 700;
+  border: 1px solid var(--color-border);
 }
 
 .market-table-row {
   padding: 18px 16px;
-  border-bottom: 1px solid #edf0ed;
-  color: #536158;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-main);
   font-size: 14px;
 }
 
+.market-table-row:last-child {
+  border-bottom: none;
+}
+
 .market-table-row strong {
-  color: #1f2d24;
+  color: var(--color-text-main);
   text-transform: capitalize;
 }
 
 .profit-value {
-  color: #2f7d46;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
 .no-market-data {
   padding: 25px;
-  background: #f8faf8;
-  border-radius: 12px;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
   text-align: center;
-  color: #77837a;
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border);
 }
 
 /* ================================
@@ -295,49 +325,53 @@
 
 .financial-section {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 18px;
 }
 
 .financial-card {
-  background: white;
-  border: 1px solid #e5ede6;
-  border-radius: 16px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: 22px;
   display: flex;
   align-items: center;
   gap: 15px;
+  box-shadow: var(--shadow-sm);
 }
 
 .financial-icon {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: #edf6ef;
-  color: #2f7d46;
+  background: var(--color-bg-elevated);
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .financial-card p {
   margin: 0 0 5px;
-  color: #77837a;
+  color: var(--color-text-muted);
   font-size: 13px;
+  font-weight: 500;
 }
 
 .financial-card h3 {
   margin: 0;
   font-size: 21px;
-  color: #1f2d24;
+  color: var(--color-text-main);
+  font-weight: 700;
 }
 
 .profit-card {
-  border-color: #cfe5d3;
+  border-color: var(--color-primary);
 }
 
 .profit-card h3 {
-  color: #2f7d46;
+  color: var(--color-primary);
 }
 
 /* ================================
@@ -369,14 +403,6 @@
 
   .market-back-btn {
     padding: 9px 11px;
-  }
-
-  .market-back-btn {
-    font-size: 0;
-  }
-
-  .market-back-btn svg {
-    margin: 0;
   }
 
   .market-heading {

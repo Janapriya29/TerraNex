@@ -8,16 +8,27 @@ import {
   Bug,
   TrendingUp,
   AlertCircle,
-  IndianRupee,
   BarChart3
 } from "lucide-react";
 
+import {
+  getCropHistory,
+  getDiseaseHistory,
+  getFullImageUrl
+} from "../api";
+import { useLanguage } from "../context/LanguageContext";
+import LanguageSelector from "../components/common/LanguageSelector";
 import "./History.css";
-
-const API_BASE_URL = "https://agrivoice-e14c.onrender.com";
 
 function History() {
   const navigate = useNavigate();
+  const {
+    t,
+    formatCropDisplayName,
+    formatDiseaseDisplayName,
+    formatSpeciesDisplayName,
+    formatStatusDisplayName
+  } = useLanguage();
 
   const [diseaseHistory, setDiseaseHistory] = useState([]);
   const [cropHistory, setCropHistory] = useState([]);
@@ -26,76 +37,65 @@ function History() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    loadHistory();
-  }, []);
+    let isMounted = true;
 
-  const loadHistory = async () => {
-    try {
-      setLoading(true);
-      setError("");
+    async function fetchHistory() {
+      try {
+        const userId = localStorage.getItem("user_id");
 
-      const userId = localStorage.getItem("user_id");
+        if (!userId) {
+          if (isMounted) {
+            setError(t("common.sessionExpired", "Please login again to continue."));
+            setLoading(false);
+          }
+          return;
+        }
 
-      if (!userId) {
-        setError("Please login again.");
-        setLoading(false);
-        return;
+        const [diseaseData, cropData] = await Promise.all([
+          getDiseaseHistory(userId),
+          getCropHistory(userId)
+        ]);
+
+        if (isMounted) {
+          setDiseaseHistory(diseaseData.history || []);
+          setCropHistory(cropData.history || []);
+        }
+      } catch (err) {
+        if (isMounted) {
+          const msg = err.message || t("history.loadError", "Failed to load history.");
+          if (
+            msg.toLowerCase().includes("user not found") ||
+            msg.toLowerCase().includes("invalid user id")
+          ) {
+            try {
+              localStorage.removeItem("user_id");
+              localStorage.removeItem("user_name");
+              localStorage.removeItem("user_email");
+            } catch {
+              // Ignore
+            }
+            navigate("/login");
+          } else {
+            setError(msg);
+          }
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-
-      // ================================
-      // DISEASE HISTORY
-      // ================================
-
-      const diseaseResponse = await fetch(
-        `${API_BASE_URL}/disease/history/${userId}`
-      );
-
-      const diseaseData = await diseaseResponse.json();
-
-      if (!diseaseResponse.ok) {
-        throw new Error(
-          diseaseData.detail || "Failed to load disease history"
-        );
-      }
-
-      // ================================
-      // CROP HISTORY
-      // ================================
-
-      const cropResponse = await fetch(
-        `${API_BASE_URL}/crop/history/${userId}`
-      );
-
-      const cropData = await cropResponse.json();
-
-      if (!cropResponse.ok) {
-        throw new Error(
-          cropData.detail || "Failed to load crop history"
-        );
-      }
-
-      setDiseaseHistory(diseaseData.history || []);
-      setCropHistory(cropData.history || []);
-
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
     }
-  };
+
+    fetchHistory();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [t, navigate]);
 
   const formatDate = (date) => {
     if (!date) return "";
-
     return new Date(date).toLocaleString();
-  };
-
-  const formatCropName = (crop) => {
-    if (!crop) return "";
-
-    return crop
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (letter) => letter.toUpperCase());
   };
 
   return (
@@ -115,13 +115,17 @@ function History() {
           <span>TerraNex</span>
         </div>
 
-        <button
-          className="history-back-btn"
-          onClick={() => navigate("/dashboard")}
-        >
-          <ArrowLeft size={18} />
-          Back to Dashboard
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <LanguageSelector />
+
+          <button
+            className="history-back-btn"
+            onClick={() => navigate("/dashboard")}
+          >
+            <ArrowLeft size={18} />
+            <span>{t("common.backToDashboard", "Back to Dashboard")}</span>
+          </button>
+        </div>
 
       </nav>
 
@@ -142,11 +146,10 @@ function History() {
 
           <div>
 
-            <h1>My History</h1>
+            <h1>{t("history.pageTitle", "Activity History")}</h1>
 
             <p>
-              View your previous disease predictions
-              and crop recommendations.
+              {t("history.pageDesc", "Review your past crop recommendations and plant disease detection results.")}
             </p>
 
           </div>
@@ -158,7 +161,7 @@ function History() {
 
         {loading && (
           <div className="history-message">
-            Loading your history...
+            {t("history.loadingText", "Loading history...")}
           </div>
         )}
 
@@ -193,11 +196,11 @@ function History() {
                 <div>
 
                   <h2>
-                    Disease Prediction History
+                    {t("history.diseaseSectionTitle", "Disease Detection History")}
                   </h2>
 
                   <p>
-                    Your previous plant disease detections
+                    {t("history.diseaseSectionDesc", "Past plant disease scans and diagnostic records.")}
                   </p>
 
                 </div>
@@ -208,7 +211,7 @@ function History() {
               {diseaseHistory.length === 0 ? (
 
                 <div className="empty-history">
-                  No disease predictions yet.
+                  {t("history.diseaseEmptyTitle", "No disease detection history yet.")}
                 </div>
 
               ) : (
@@ -227,7 +230,7 @@ function History() {
                       {item.image_url && (
                         <img
                           className="history-image"
-                          src={item.image_url}
+                          src={getFullImageUrl(item.image_url)}
                           alt="Plant"
                         />
                       )}
@@ -235,26 +238,73 @@ function History() {
 
                       <div className="history-card-content">
 
-                        <h3>
-                          {item.prediction}
-                        </h3>
+                        {/* Status Badge */}
+                        {(() => {
+                          const status = item.status || (
+                            (item.is_potato_screening || String(item.prediction || "").toLowerCase().includes("potato"))
+                              ? "potato_screening"
+                              : (item.is_uncertain || Number(item.confidence) < 70 ? "abstained_uncertain_species" : "accepted")
+                          );
+                          const treatmentPermitted = Boolean(item.treatment_available === true && status === "accepted");
 
+                          const badgeClassMap = {
+                            accepted: "h-badge-accepted",
+                            potato_screening: "h-badge-potato",
+                            rejected_unsupported_species: "h-badge-rejected",
+                            abstained_uncertain_species: "h-badge-abstained",
+                            cross_stage_discrepancy: "h-badge-discrepancy",
+                            model_unavailable: "h-badge-degraded",
+                            legacy_record: "h-badge-legacy"
+                          };
 
-                        {/* Confidence */}
+                          const badgeCls = badgeClassMap[status] || "h-badge-legacy";
+                          const badgeText = formatStatusDisplayName(status);
 
-                        <div className="confidence">
+                          return (
+                            <>
+                              <div className={`history-status-badge ${badgeCls}`}>
+                                {badgeText}
+                              </div>
 
-                          Confidence:
+                              <h3>
+                                {formatDiseaseDisplayName(item.prediction)}
+                              </h3>
 
-                          <strong>
-                            {item.confidence}%
-                          </strong>
+                              {item.plant_species && (
+                                <div className="history-crop-label">
+                                  <span>Crop: </span>
+                                  <strong>{formatSpeciesDisplayName(item.plant_species)}</strong>
+                                </div>
+                              )}
 
-                        </div>
+                              {/* Confidence */}
+                              <div className="confidence">
+                                {t("history.confidenceLabel", "AI Confidence")}: <strong>{item.confidence}%</strong>
+                              </div>
 
+                              {/* Treatment Safety Indicator */}
+                              <div className="history-safety-tags">
+                                {treatmentPermitted ? (
+                                  <span className="history-treatment-tag permitted">
+                                    {t("history.permittedTreatment", "Permitted Treatment")}
+                                  </span>
+                                ) : (
+                                  <span className="history-treatment-tag suppressed">
+                                    {t("history.suppressedTreatment", "Chemical Treatment Suppressed")}
+                                  </span>
+                                )}
+
+                                {item.symptoms_confirmed && (
+                                  <span className="history-symptom-tag">
+                                    {t("history.confirmedSymptoms", "Confirmed Foliar Symptoms")}
+                                  </span>
+                                )}
+                              </div>
+                            </>
+                          );
+                        })()}
 
                         {/* Date */}
-
                         <p className="history-date">
                           {formatDate(item.created_at)}
                         </p>
@@ -285,11 +335,11 @@ function History() {
                 <div>
 
                   <h2>
-                    Crop Recommendation History
+                    {t("history.cropSectionTitle", "Crop Recommendation History")}
                   </h2>
 
                   <p>
-                    Your previous AI crop recommendations
+                    {t("history.cropSectionDesc", "Past soil assessments and recommended crops.")}
                   </p>
 
                 </div>
@@ -300,7 +350,7 @@ function History() {
               {cropHistory.length === 0 ? (
 
                 <div className="empty-history">
-                  No crop recommendations yet.
+                  {t("history.cropEmptyTitle", "No crop recommendation history yet.")}
                 </div>
 
               ) : (
@@ -326,11 +376,11 @@ function History() {
                         {/* Best Crop */}
 
                         <p className="best-label">
-                          BEST OVERALL CROP
+                          {t("history.bestCropLabel", "BEST OVERALL CROP")}
                         </p>
 
                         <h3>
-                          {formatCropName(
+                          {formatCropDisplayName(
                             item.best_overall_crop
                           )}
                         </h3>
@@ -343,7 +393,7 @@ function History() {
                         <div className="recommendation-history">
 
                           <h4>
-                            AI Recommended Crops
+                            {t("history.recommendationsLabel", "AI Recommendations")}
                           </h4>
 
                           {item.recommendations?.map(
@@ -355,7 +405,7 @@ function History() {
                               >
 
                                 <span>
-                                  {formatCropName(
+                                  {formatCropDisplayName(
                                     recommendation.crop
                                   )}
                                 </span>
@@ -385,7 +435,7 @@ function History() {
                               <BarChart3 size={18} />
 
                               <h4>
-                                Market Analysis
+                                {t("history.marketSummaryTitle", "Market Analysis Summary")}
                               </h4>
 
                             </div>
@@ -402,11 +452,11 @@ function History() {
                                   <div className="market-history-row">
 
                                     <span>
-                                      Crop
+                                      {t("market.colCrop", "Crop")}
                                     </span>
 
                                     <strong>
-                                      {formatCropName(
+                                      {formatCropDisplayName(
                                         market.crop
                                       )}
                                     </strong>
@@ -417,7 +467,7 @@ function History() {
                                   <div className="market-history-row">
 
                                     <span>
-                                      ML Confidence
+                                      {t("market.colMlConfidence", "ML Confidence")}
                                     </span>
 
                                     <strong>
@@ -430,11 +480,11 @@ function History() {
                                   <div className="market-history-row">
 
                                     <span>
-                                      Market Price
+                                      {t("history.modalPriceLabel", "Modal Market Price")}
                                     </span>
 
                                     <strong>
-                                      ₹{market.average_modal_price}
+                                      ₹{Number(market.average_modal_price).toLocaleString("en-IN")}
                                     </strong>
 
                                   </div>
@@ -443,7 +493,7 @@ function History() {
                                   <div className="market-history-row">
 
                                     <span>
-                                      Markets Available
+                                      {t("market.colMarkets", "Markets Available")}
                                     </span>
 
                                     <strong>
@@ -456,7 +506,7 @@ function History() {
                                   <div className="market-history-row">
 
                                     <span>
-                                      Price Score
+                                      {t("market.colPriceScore", "Price Score")}
                                     </span>
 
                                     <strong>
@@ -469,11 +519,11 @@ function History() {
                                   <div className="market-history-row profit-row">
 
                                     <span>
-                                      Estimated Profit
+                                      {t("history.profitLabel", "Potential Profit")}
                                     </span>
 
                                     <strong>
-                                      ₹{market.estimated_profit}
+                                      ₹{Number(market.estimated_profit).toLocaleString("en-IN")}
                                     </strong>
 
                                   </div>

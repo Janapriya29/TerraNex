@@ -9,19 +9,25 @@ import {
   History,
   LogOut,
   User,
-  ArrowRight
+  ArrowRight,
+  Sun,
+  Moon
 } from "lucide-react";
 
+import { getCropHistory, getDiseaseHistory } from "../api";
+import { useLanguage } from "../context/LanguageContext";
+import { useTheme } from "../context/ThemeContext";
+import LanguageSelector from "../components/common/LanguageSelector";
 import "./Dashboard.css";
-
-const API_BASE_URL = "https://agrivoice-e14c.onrender.com";
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { t, formatCropDisplayName, formatDiseaseDisplayName } = useLanguage();
+  const { isDark, toggleTheme } = useTheme();
 
   const [recentActivity, setRecentActivity] = useState([]);
 
-  const userName = localStorage.getItem("user_name") || "Farmer";
+  const userName = localStorage.getItem("user_name") || t("common.farmer", "Farmer");
 
   useEffect(() => {
     const userId = localStorage.getItem("user_id");
@@ -30,25 +36,10 @@ function Dashboard() {
 
     async function fetchRecentActivity() {
       try {
-        const [cropResponse, diseaseResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}/crop/history/${userId}`),
-          fetch(`${API_BASE_URL}/disease/history/${userId}`)
+        const [cropData, diseaseData] = await Promise.all([
+          getCropHistory(userId),
+          getDiseaseHistory(userId)
         ]);
-
-        const cropData = await cropResponse.json();
-        const diseaseData = await diseaseResponse.json();
-
-        if (!cropResponse.ok) {
-          throw new Error(
-            cropData.detail || "Failed to fetch crop history"
-          );
-        }
-
-        if (!diseaseResponse.ok) {
-          throw new Error(
-            diseaseData.detail || "Failed to fetch disease history"
-          );
-        }
 
         const activities = [];
 
@@ -61,8 +52,7 @@ function Dashboard() {
 
           activities.push({
             type: "crop",
-            title: "Crop Recommendation",
-            description: `Best crop: ${latestCrop.best_overall_crop}`,
+            rawCrop: latestCrop.best_overall_crop,
             date: latestCrop.created_at
           });
         }
@@ -76,8 +66,7 @@ function Dashboard() {
 
           activities.push({
             type: "disease",
-            title: "Disease Detection",
-            description: `${latestDisease.prediction} detected`,
+            rawDisease: latestDisease.prediction,
             date: latestDisease.created_at
           });
         }
@@ -98,11 +87,24 @@ function Dashboard() {
           "Failed to fetch recent activity:",
           error
         );
+        if (
+          error.message?.toLowerCase().includes("user not found") ||
+          error.message?.toLowerCase().includes("invalid user id")
+        ) {
+          try {
+            localStorage.removeItem("user_id");
+            localStorage.removeItem("user_name");
+            localStorage.removeItem("user_email");
+          } catch {
+            // Ignore
+          }
+          navigate("/login");
+        }
       }
     }
 
     fetchRecentActivity();
-  }, []);
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("user_id");
@@ -118,12 +120,25 @@ function Dashboard() {
       {/* Navbar */}
       <nav className="dashboard-navbar">
 
-        <div className="dashboard-logo">
+        <div className="dashboard-logo" onClick={() => navigate("/dashboard")}>
           <Sprout size={30} />
           <span>TerraNex</span>
         </div>
 
         <div className="dashboard-user">
+
+          <LanguageSelector />
+
+          <button
+            type="button"
+            className="logout-btn"
+            style={{ padding: "8px 12px" }}
+            onClick={toggleTheme}
+            aria-label="Toggle Theme"
+            title={isDark ? t("nav.themeLight", "Switch to light mode") : t("nav.themeDark", "Switch to dark mode")}
+          >
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
 
           <div className="user-info">
             <User size={20} />
@@ -135,7 +150,7 @@ function Dashboard() {
             onClick={handleLogout}
           >
             <LogOut size={18} />
-            Logout
+            {t("dashboard.logout", "Logout")}
           </button>
 
         </div>
@@ -151,16 +166,15 @@ function Dashboard() {
           <div>
 
             <p className="welcome-small">
-              SMART FARMING DASHBOARD
+              {t("dashboard.welcomeBadge", "SMART FARMING DASHBOARD")}
             </p>
 
             <h1>
-              Welcome back, <span>{userName}</span> 👋
+              {t("dashboard.welcomeTitle", "Welcome back")}, <span>{userName}</span> 👋
             </h1>
 
             <p>
-              Use AI-powered tools to make better decisions
-              for your crops and farming activities.
+              {t("dashboard.welcomeDesc", "Use AI-powered tools to make better decisions for your crops and farming activities.")}
             </p>
 
           </div>
@@ -173,7 +187,7 @@ function Dashboard() {
 
         {/* Dashboard Heading */}
         <h2 className="dashboard-heading">
-          What would you like to do?
+          {t("dashboard.sectionHeading", "What would you like to do?")}
         </h2>
 
         {/* Dashboard Cards */}
@@ -186,11 +200,10 @@ function Dashboard() {
               <Leaf size={32} />
             </div>
 
-            <h3>Crop Recommendation</h3>
+            <h3>{t("dashboard.cropCardTitle", "Crop Recommendation")}</h3>
 
             <p>
-              Find the most suitable crops based on soil
-              nutrients, weather and environmental conditions.
+              {t("dashboard.cropCardDesc", "Find the most suitable crops based on soil nutrients, weather and environmental conditions.")}
             </p>
 
             <button
@@ -199,7 +212,7 @@ function Dashboard() {
               }
               className="dashboard-action-btn"
             >
-              Get Recommendation
+              {t("dashboard.cropCardBtn", "Get Recommendation")}
               <ArrowRight size={18} />
             </button>
 
@@ -212,11 +225,10 @@ function Dashboard() {
               <ScanLine size={32} />
             </div>
 
-            <h3>Disease Detection</h3>
+            <h3>{t("dashboard.diseaseCardTitle", "Disease Detection")}</h3>
 
             <p>
-              Upload a crop or plant leaf image and let AI
-              identify possible diseases.
+              {t("dashboard.diseaseCardDesc", "Upload a crop or plant leaf image and let AI identify possible diseases.")}
             </p>
 
             <button
@@ -225,7 +237,7 @@ function Dashboard() {
               }
               className="dashboard-action-btn"
             >
-              Detect Disease
+              {t("dashboard.diseaseCardBtn", "Detect Disease")}
               <ArrowRight size={18} />
             </button>
 
@@ -238,11 +250,10 @@ function Dashboard() {
               <TrendingUp size={32} />
             </div>
 
-            <h3>Market Analysis</h3>
+            <h3>{t("dashboard.marketCardTitle", "Market Analysis")}</h3>
 
             <p>
-              Analyze crop recommendations with market
-              prices and estimated profit opportunities.
+              {t("dashboard.marketCardDesc", "View market prices, cost estimates and profitability for recommended crops.")}
             </p>
 
             <button
@@ -251,7 +262,7 @@ function Dashboard() {
               }
               className="dashboard-action-btn"
             >
-              Analyze Market
+              {t("dashboard.marketCardBtn", "View Market Analysis")}
               <ArrowRight size={18} />
             </button>
 
@@ -264,11 +275,10 @@ function Dashboard() {
               <History size={32} />
             </div>
 
-            <h3>My History</h3>
+            <h3>{t("dashboard.historyCardTitle", "History & Records")}</h3>
 
             <p>
-              View your previous disease predictions and
-              crop recommendations.
+              {t("dashboard.historyCardDesc", "Review your previous crop recommendations and disease detection results.")}
             </p>
 
             <button
@@ -277,7 +287,7 @@ function Dashboard() {
               }
               className="dashboard-action-btn"
             >
-              View History
+              {t("dashboard.historyCardBtn", "View History")}
               <ArrowRight size={18} />
             </button>
 
@@ -293,10 +303,10 @@ function Dashboard() {
             <div>
 
               <p className="welcome-small">
-                YOUR ACTIVITY
+                {t("dashboard.welcomeBadge", "YOUR ACTIVITY")}
               </p>
 
-              <h2>Recent Activity</h2>
+              <h2>{t("dashboard.recentActivityTitle", "Recent Activity")}</h2>
 
             </div>
 
@@ -306,7 +316,7 @@ function Dashboard() {
                 navigate("/history")
               }
             >
-              View All
+              {t("dashboard.viewAllBtn", "View All")}
               <ArrowRight size={17} />
             </button>
 
@@ -321,11 +331,10 @@ function Dashboard() {
 
               <div>
 
-                <h3>No recent activity</h3>
+                <h3>{t("dashboard.emptyActivityTitle", "No activity yet")}</h3>
 
                 <p>
-                  Your crop recommendations and disease
-                  detection history will appear here.
+                  {t("dashboard.emptyActivityDesc", "Start by getting a crop recommendation or scanning a plant leaf for disease.")}
                 </p>
 
               </div>
@@ -365,11 +374,15 @@ function Dashboard() {
                     <div className="activity-details">
 
                       <h3>
-                        {activity.title}
+                        {activity.type === "crop"
+                          ? t("dashboard.activityCropTitle", "Crop Recommendation")
+                          : t("dashboard.activityDiseaseTitle", "Disease Detection")}
                       </h3>
 
                       <p>
-                        {activity.description}
+                        {activity.type === "crop"
+                          ? `${t("dashboard.activityCropBest", "Best crop")}: ${formatCropDisplayName(activity.rawCrop)}`
+                          : `${formatDiseaseDisplayName(activity.rawDisease)} ${t("dashboard.activityDiseaseDetected", "detected")}`}
                       </p>
 
                       {activity.date && (

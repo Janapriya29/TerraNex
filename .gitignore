@@ -7,6 +7,8 @@ __pycache__/
 # Environment / secrets
 .env
 .env.*
+!.env.example
+backups/
 
 # Node
 node_modules/
@@ -28,3 +30,5 @@ uploads/disease_images/*
 # OS
 .DS_Store
 Thumbs.db
+# Raw plant disease dataset — keep local, don't upload to GitHub
+/data/plant_disease/raw/PlantVillage/

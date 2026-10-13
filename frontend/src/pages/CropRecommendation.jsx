@@ -14,10 +14,13 @@ import {
 } from "lucide-react";
 
 import { recommendCrop } from "../services/api";
+import { useLanguage } from "../context/LanguageContext";
+import LanguageSelector from "../components/common/LanguageSelector";
 import "./CropRecommendation.css";
 
 function CropRecommendation() {
   const navigate = useNavigate();
+  const { t, formatCropDisplayName } = useLanguage();
 
   const [formData, setFormData] = useState({
     N: "",
@@ -48,14 +51,35 @@ function CropRecommendation() {
     const values = Object.values(formData);
 
     if (values.some((value) => value === "")) {
-      setError("Please fill in all the farm condition fields.");
+      setError(t("crop.validationRequired", "Please fill in all the farm condition fields."));
       return;
     }
 
     const userId = localStorage.getItem("user_id");
 
     if (!userId) {
-      setError("Please login again.");
+      setError(t("common.sessionExpired", "Please login again to continue."));
+      return;
+    }
+
+    const numN = Number(formData.N);
+    const numP = Number(formData.P);
+    const numK = Number(formData.K);
+    const numTemp = Number(formData.temperature);
+    const numHum = Number(formData.humidity);
+    const numPh = Number(formData.ph);
+    const numRain = Number(formData.rainfall);
+
+    if (
+      isNaN(numN) || isNaN(numP) || isNaN(numK) ||
+      isNaN(numTemp) || isNaN(numHum) || isNaN(numPh) || isNaN(numRain)
+    ) {
+      setError(t("crop.validationRequired", "Please fill in all the farm condition fields with valid numbers."));
+      return;
+    }
+
+    if (numN < 0 || numP < 0 || numK < 0 || numHum < 0 || numHum > 100 || numPh < 0 || numPh > 14 || numRain < 0) {
+      setError(t("crop.validationRanges", "Please provide valid agronomic inputs (Humidity 0-100%, pH 0-14, positive values)."));
       return;
     }
 
@@ -65,13 +89,13 @@ function CropRecommendation() {
       setResult(null);
 
       const cropData = {
-        N: Number(formData.N),
-        P: Number(formData.P),
-        K: Number(formData.K),
-        temperature: Number(formData.temperature),
-        humidity: Number(formData.humidity),
-        ph: Number(formData.ph),
-        rainfall: Number(formData.rainfall)
+        N: numN,
+        P: numP,
+        K: numK,
+        temperature: numTemp,
+        humidity: numHum,
+        ph: numPh,
+        rainfall: numRain
       };
 
       const data = await recommendCrop(userId, cropData);
@@ -79,18 +103,26 @@ function CropRecommendation() {
       setResult(data);
 
     } catch (error) {
-      setError(error.message);
+      const msg = error.message || t("crop.defaultError", "Crop recommendation failed.");
+      if (
+        msg.toLowerCase().includes("user not found") ||
+        msg.toLowerCase().includes("invalid user id")
+      ) {
+        try {
+          localStorage.removeItem("user_id");
+          localStorage.removeItem("user_name");
+          localStorage.removeItem("user_email");
+        } catch {
+          // Ignore
+        }
+        setError(t("common.sessionExpired", "Your session has expired or is invalid. Please login again."));
+        setTimeout(() => navigate("/login"), 1500);
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatCropName = (crop) => {
-    if (!crop) return "";
-
-    return crop
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (letter) => letter.toUpperCase());
   };
 
   const formatMoney = (value) => {
@@ -118,13 +150,26 @@ function CropRecommendation() {
           <span>TerraNex</span>
         </div>
 
-        <button
-          className="back-btn"
-          onClick={() => navigate("/dashboard")}
-        >
-          <ArrowLeft size={18} />
-          Back to Dashboard
-        </button>
+        <div className="nav-actions-group">
+          <LanguageSelector />
+
+          <button
+            className="header-market-link"
+            onClick={() => navigate("/market-analysis")}
+            title={t("crop.marketRatesBtn", "APMC Market Rates")}
+          >
+            <TrendingUp size={16} />
+            <span>{t("crop.marketRatesBtn", "APMC Market Rates")}</span>
+          </button>
+
+          <button
+            className="back-btn"
+            onClick={() => navigate("/dashboard")}
+          >
+            <ArrowLeft size={18} />
+            <span>{t("common.backToDashboard", "Back to Dashboard")}</span>
+          </button>
+        </div>
 
       </nav>
 
@@ -145,11 +190,10 @@ function CropRecommendation() {
 
           <div>
 
-            <h1>Crop Recommendation</h1>
+            <h1>{t("crop.pageTitle", "AI Crop Recommendation")}</h1>
 
             <p>
-              Enter your soil and environmental conditions
-              to find suitable crops using AI.
+              {t("crop.pageDesc", "Enter your soil and climate data to get the best crop recommendations powered by Machine Learning.")}
             </p>
 
           </div>
@@ -165,11 +209,10 @@ function CropRecommendation() {
 
           <div className="crop-form-card">
 
-            <h2>Farm Conditions</h2>
+            <h2>{t("crop.soilSectionTitle", "Farm & Climate Parameters")}</h2>
 
             <p className="form-description">
-              Enter the values from your soil and
-              environmental analysis.
+              {t("demo.cropDesc", "Enter soil test values and climate parameters to predict the most viable crop.")}
             </p>
 
 
@@ -179,12 +222,12 @@ function CropRecommendation() {
 
               <div className="crop-input">
 
-                <label>Nitrogen (N)</label>
+                <label>{t("crop.nLabel", "Nitrogen (N)")}</label>
 
                 <input
                   type="number"
                   name="N"
-                  placeholder="Example: 90"
+                  placeholder={t("crop.nPlaceholder", "Example: 90")}
                   value={formData.N}
                   onChange={handleChange}
                 />
@@ -196,12 +239,12 @@ function CropRecommendation() {
 
               <div className="crop-input">
 
-                <label>Phosphorus (P)</label>
+                <label>{t("crop.pLabel", "Phosphorus (P)")}</label>
 
                 <input
                   type="number"
                   name="P"
-                  placeholder="Example: 42"
+                  placeholder={t("crop.pPlaceholder", "Example: 42")}
                   value={formData.P}
                   onChange={handleChange}
                 />
@@ -213,12 +256,12 @@ function CropRecommendation() {
 
               <div className="crop-input">
 
-                <label>Potassium (K)</label>
+                <label>{t("crop.kLabel", "Potassium (K)")}</label>
 
                 <input
                   type="number"
                   name="K"
-                  placeholder="Example: 43"
+                  placeholder={t("crop.kPlaceholder", "Example: 43")}
                   value={formData.K}
                   onChange={handleChange}
                 />
@@ -230,13 +273,13 @@ function CropRecommendation() {
 
               <div className="crop-input">
 
-                <label>Temperature (°C)</label>
+                <label>{t("crop.tempLabel", "Temperature (°C)")}</label>
 
                 <input
                   type="number"
                   step="0.01"
                   name="temperature"
-                  placeholder="Example: 20.87"
+                  placeholder={t("crop.tempPlaceholder", "Example: 20.87")}
                   value={formData.temperature}
                   onChange={handleChange}
                 />
@@ -248,13 +291,13 @@ function CropRecommendation() {
 
               <div className="crop-input">
 
-                <label>Humidity (%)</label>
+                <label>{t("crop.humidityLabel", "Humidity (%)")}</label>
 
                 <input
                   type="number"
                   step="0.01"
                   name="humidity"
-                  placeholder="Example: 82"
+                  placeholder={t("crop.humidityPlaceholder", "Example: 82")}
                   value={formData.humidity}
                   onChange={handleChange}
                 />
@@ -266,13 +309,13 @@ function CropRecommendation() {
 
               <div className="crop-input">
 
-                <label>Soil pH</label>
+                <label>{t("crop.phLabel", "Soil pH")}</label>
 
                 <input
                   type="number"
                   step="0.01"
                   name="ph"
-                  placeholder="Example: 6.5"
+                  placeholder={t("crop.phPlaceholder", "Example: 6.5")}
                   value={formData.ph}
                   onChange={handleChange}
                 />
@@ -284,13 +327,13 @@ function CropRecommendation() {
 
               <div className="crop-input full-width">
 
-                <label>Rainfall (mm)</label>
+                <label>{t("crop.rainfallLabel", "Rainfall (mm)")}</label>
 
                 <input
                   type="number"
                   step="0.01"
                   name="rainfall"
-                  placeholder="Example: 202.93"
+                  placeholder={t("crop.rainfallPlaceholder", "Example: 202.93")}
                   value={formData.rainfall}
                   onChange={handleChange}
                 />
@@ -311,8 +354,8 @@ function CropRecommendation() {
               <Search size={20} />
 
               {loading
-                ? "Analyzing..."
-                : "Get Crop Recommendation"}
+                ? t("crop.analyzingBtn", "Analyzing...")
+                : t("crop.recommendBtn", "Get Crop Recommendation")}
 
             </button>
 
@@ -351,17 +394,15 @@ function CropRecommendation() {
 
 
                 <p className="result-label">
-                  AI CROP RECOMMENDATION
+                  {t("crop.resultBadge", "AI CROP RECOMMENDATION")}
                 </p>
 
 
                 {/* Best Crop */}
 
                 <h2>
-                  Best Crop:{" "}
-                  {formatCropName(
-                    result.best_overall_crop
-                  )}
+                  {t("crop.bestCropTitle", "Best Crop")}:{" "}
+                  {formatCropDisplayName(result.best_overall_crop)}
                 </h2>
 
 
@@ -380,7 +421,7 @@ function CropRecommendation() {
                       >
 
                         <span>
-                          {formatCropName(item.crop)}
+                          {formatCropDisplayName(item.crop)}
                         </span>
 
                         <strong>
@@ -408,7 +449,7 @@ function CropRecommendation() {
                       <TrendingUp size={20} />
 
                       <h3>
-                        Market Analysis
+                        {t("crop.marketAnalysisTitle", "Market Analysis")}
                       </h3>
 
                     </div>
@@ -425,11 +466,11 @@ function CropRecommendation() {
                           <div>
 
                             <strong>
-                              {formatCropName(item.crop)}
+                              {formatCropDisplayName(item.crop)}
                             </strong>
 
                             <p>
-                              Market Price
+                              {t("crop.marketPriceLabel", "Market Price")}
                             </p>
 
                           </div>
@@ -460,7 +501,7 @@ function CropRecommendation() {
 
                             <span>
                               <Wallet size={15} />
-                              Estimated Cost
+                              {t("crop.estimatedCostLabel", "Estimated Cost")}
                             </span>
 
                             <strong>
@@ -476,7 +517,7 @@ function CropRecommendation() {
 
                             <span>
                               <IndianRupee size={15} />
-                              Estimated Profit
+                              {t("crop.estimatedProfitLabel", "Estimated Profit")}
                             </span>
 
                             <strong>
@@ -510,7 +551,7 @@ function CropRecommendation() {
                     }
                   >
                     <TrendingUp size={18} />
-                    View Full Market Analysis
+                    {t("crop.viewMarketBtn", "View Full Market Analysis")}
                   </button>
 
                 )}
@@ -519,8 +560,7 @@ function CropRecommendation() {
                 {/* History message */}
 
                 <p className="result-description">
-                  This recommendation and market analysis
-                  have been saved to your TerraNex history.
+                  {t("crop.historySavedNote", "This recommendation and market analysis have been saved to your TerraNex history.")}
                 </p>
 
               </div>
@@ -531,14 +571,10 @@ function CropRecommendation() {
 
                 <Sprout size={55} />
 
-                <h2>AI Recommendation</h2>
+                <h2>{t("crop.placeholderTitle", "AI Recommendation")}</h2>
 
                 <p>
-                  Enter your farm conditions and click
-                  <strong>
-                    {" "}Get Crop Recommendation{" "}
-                  </strong>
-                  to see suitable crops.
+                  {t("crop.placeholderDesc", "Enter your farm conditions and click Get Crop Recommendation to see suitable crops.")}
                 </p>
 
               </div>

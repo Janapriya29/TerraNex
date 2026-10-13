@@ -1,0 +1,57 @@
+{
+  "audit_title": "TerraNex Step 5 Final Consistency & Provenance Audit",
+  "audit_timestamp": "2026-10-12T21:12:00",
+  "model_checksums": {
+    "stage1_species_model": {
+      "path": "models/crop_species_model_v1.0.keras",
+      "sha256": "8f1441a0b9e5412e3424cbb4050599be155028ecc8b5ad4364de4b9aea8b6e8a",
+      "status": "Verified Invariant"
+    },
+    "stage2_disease_model": {
+      "path": "models/crop_disease_model.keras",
+      "sha256": "215225ae176b23514bf59e39e2b7b521b4bcff2f600a504dc6cec712342a2c82",
+      "status": "Verified Invariant"
+    }
+  },
+  "denominator_reconciliation": {
+    "total_manifest_test_images": 1417,
+    "raw_confusion_matrix_denominator": 1417,
+    "gatekeeper_partition": {
+      "accepted_stage2": 1030,
+      "abstained_uncertain": 10,
+      "rejected_unsupported": 377,
+      "partition_sum_check": 1417
+    },
+    "unsupported_far_denominator": 363,
+    "unsupported_far_numerator": 0,
+    "unsupported_far_rate": 0.0,
+    "supported_frr_denominator": 1054,
+    "supported_frr_numerator": 24,
+    "supported_frr_rate": 0.0228,
+    "accepted_species_accuracy_denominator": 1030,
+    "accepted_species_accuracy_numerator": 1029,
+    "accepted_species_accuracy_rate": 0.999
+  },
+  "stress_cohort_provenance_audit": {
+    "cohort_size": 550,
+    "source_dataset": "Unused raw PlantVillage non-manifest pool (44,858 unused images)",
+    "exact_hash_collisions": {
+      "train_split": 0,
+      "val_split": 0,
+      "test_split": 0
+    },
+    "near_duplicate_analysis": {
+      "same_category_suffix_overlap": 0,
+      "independence_qualification": "Images are bitwise unique and non-overlapping with train/val/test splits, but share laboratory collection protocols and sensor profiles with PlantVillage. They represent internal out-of-sample evaluation, NOT fully independent open-world farm imagery."
+    }
+  },
+  "cross_stage_safety_audit": {
+    "cross_stage_consistency_scope": "Filters inter-genus disagreements only (e.g., Stage 1 Potato vs Stage 2 Tomato Late Blight).",
+    "healthy_potato_limitation": "CANNOT detect healthy potato foliage when Stage 2 outputs Potato Late Blight, because both stages agree on the genus 'Potato' (12 out of 22 accepted healthy potato leaves).",
+    "mandatory_step6_safeguards": [
+      "Fungicide treatment advice must be completely suppressed by default for all potato diagnoses.",
+      "Frontend must render an interactive pre-treatment symptom checklist requiring visual lesion confirmation.",
+      "API response must attach prominent healthy potato diagnostic advisory notice."
+    ]
+  }
+}

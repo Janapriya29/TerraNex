@@ -1,7 +1,16 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
+try:
+    from pydantic import EmailStr
+    class _EmailCheck(BaseModel):
+        e: EmailStr
+except Exception:
+    EmailStr = str
+
 from datetime import datetime
 import hashlib
+import hmac
+import re
 
 from app.database import users_collection
 
@@ -32,15 +41,53 @@ class UserLogin(BaseModel):
 
 
 # =====================================
+# HELPER: FIND USER BY EMAIL
+# =====================================
+
+def find_user_by_email(email_str: str):
+    norm_email = email_str.strip().lower()
+
+    # 1. Exact match with normalized email
+    user = users_collection.find_one({"email": norm_email})
+    if user:
+        return user
+
+    # 2. Case-insensitive regex fallback for legacy records
+    try:
+        user = users_collection.find_one({
+            "email": {"$regex": f"^{re.escape(norm_email)}$", "$options": "i"}
+        })
+        if user:
+            return user
+    except Exception:
+        pass
+
+    return None
+
+
+# =====================================
 # REGISTER USER
 # =====================================
 
 @router.post("/register")
 def register_user(user: UserRegister):
 
-    existing_user = users_collection.find_one(
-        {"email": user.email}
-    )
+    cleaned_name = user.name.strip()
+    cleaned_email = user.email.strip().lower()
+
+    if not cleaned_name:
+        raise HTTPException(
+            status_code=400,
+            detail="Name cannot be empty."
+        )
+
+    if not user.password:
+        raise HTTPException(
+            status_code=400,
+            detail="Password cannot be empty."
+        )
+
+    existing_user = find_user_by_email(cleaned_email)
 
     if existing_user:
         raise HTTPException(
@@ -53,8 +100,8 @@ def register_user(user: UserRegister):
     ).hexdigest()
 
     new_user = {
-        "name": user.name,
-        "email": user.email,
+        "name": cleaned_name,
+        "email": cleaned_email,
         "password": hashed_password,
         "created_at": datetime.now()
     }
@@ -64,8 +111,8 @@ def register_user(user: UserRegister):
     return {
         "message": "User registered successfully!",
         "user_id": str(result.inserted_id),
-        "name": user.name,
-        "email": user.email
+        "name": cleaned_name,
+        "email": cleaned_email
     }
 
 
@@ -76,9 +123,15 @@ def register_user(user: UserRegister):
 @router.post("/login")
 def login_user(user: UserLogin):
 
-    existing_user = users_collection.find_one(
-        {"email": user.email}
-    )
+    cleaned_email = user.email.strip().lower()
+
+    if not cleaned_email or not user.password:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password."
+        )
+
+    existing_user = find_user_by_email(cleaned_email)
 
     if not existing_user:
         raise HTTPException(
@@ -90,7 +143,9 @@ def login_user(user: UserLogin):
         user.password.encode()
     ).hexdigest()
 
-    if existing_user["password"] != hashed_password:
+    stored_hash = str(existing_user.get("password", ""))
+
+    if not hmac.compare_digest(stored_hash, hashed_password):
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password."
@@ -101,4 +156,4 @@ def login_user(user: UserLogin):
         "user_id": str(existing_user["_id"]),
         "name": existing_user["name"],
         "email": existing_user["email"]
-    }
+    }

@@ -1,13 +1,36 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from fastapi.staticfiles import StaticFiles
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from datetime import datetime
 from pathlib import Path
-from bson import ObjectId
+try:
+    from bson import ObjectId
+except ImportError:
+    class ObjectId:
+        def __init__(self, val=None):
+            if val is not None:
+                s = str(val)
+                if len(s) != 24 or not all(c in "0123456789abcdefABCDEF" for c in s):
+                    raise ValueError(f"'{val}' is not a valid ObjectId")
+                self._str = s
+            else:
+                import uuid
+                self._str = uuid.uuid4().hex[:24]
+
+        def __str__(self):
+            return self._str
+
+        def __repr__(self):
+            return f"ObjectId('{self._str}')"
+
+        def __eq__(self, other):
+            return str(self) == str(other)
 import io
 import uuid
+import numpy as np
 
 from app.services.model_service import model_service
+from app.config import DISEASE_UPLOAD_DIR
 from app.database import (
     users_collection,
     disease_history_collection
@@ -24,14 +47,7 @@ router = APIRouter(
 # UPLOAD FOLDER
 # =====================================
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-UPLOAD_DIR = (
-    BASE_DIR
-    / "uploads"
-    / "disease_images"
-)
-
+UPLOAD_DIR = DISEASE_UPLOAD_DIR
 UPLOAD_DIR.mkdir(
     parents=True,
     exist_ok=True
@@ -45,59 +61,87 @@ UPLOAD_DIR.mkdir(
 @router.post("/predict")
 async def predict_disease(
     user_id: str = Form(...),
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    confirmed_symptoms: bool = Form(False)
 ):
 
     # ---------------------------------
     # VALIDATE USER ID
     # ---------------------------------
 
-    try:
-        object_id = ObjectId(user_id)
+    object_id = None
+    if user_id in ("guest", "demo"):
+        user = {"name": "Demo Guest"}
+    else:
+        from app.routers.crop import find_user
+        user, object_id = find_user(user_id)
 
-    except Exception:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid user ID."
-        )
-
-    user = users_collection.find_one(
-        {"_id": object_id}
-    )
-
-    if not user:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found."
-        )
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found."
+            )
 
     # ---------------------------------
     # VALIDATE IMAGE
     # ---------------------------------
 
-    if not file.content_type.startswith("image/"):
+    if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(
             status_code=400,
             detail="Please upload a valid image file."
         )
 
-    try:
+    # Read uploaded image bytes
+    image_bytes = await file.read()
 
-        # Read uploaded image
-        image_bytes = await file.read()
-
-        # Open uploaded image
-        image = Image.open(
-            io.BytesIO(image_bytes)
+    # Validate file size limits (100 B to 10 MB)
+    if len(image_bytes) < 100:
+        raise HTTPException(
+            status_code=400,
+            detail="The uploaded file is empty or too small to be a valid image."
         )
 
+    if len(image_bytes) > 10 * 1024 * 1024:
+        raise HTTPException(
+            status_code=400,
+            detail="Image file exceeds maximum allowable size of 10MB."
+        )
+
+    # Decode and verify image integrity
+    try:
+        image = Image.open(io.BytesIO(image_bytes))
+        image.load()
+    except (UnidentifiedImageError, OSError, ValueError):
+        raise HTTPException(
+            status_code=400,
+            detail="The uploaded file could not be decoded as a valid image."
+        )
+
+    # Validate minimum image resolution
+    if image.width < 64 or image.height < 64:
+        raise HTTPException(
+            status_code=400,
+            detail="Image resolution is too low (minimum 64x64 required). Please upload a clear photo of a plant leaf."
+        )
+
+    # Validate image visual variance (reject solid/blank/uniform non-photographic inputs)
+    img_rgb = image.convert("RGB")
+    img_arr = np.array(img_rgb, dtype=np.float32)
+    if float(np.std(img_arr)) < 12.0:
+        raise HTTPException(
+            status_code=400,
+            detail="The uploaded image appears blank, uniform, or lacks visual detail. Please upload a clear photo of a plant leaf."
+        )
+
+    try:
         # ---------------------------------
         # CREATE UNIQUE IMAGE NAME
         # ---------------------------------
 
         file_extension = Path(
             file.filename
-        ).suffix
+        ).suffix or ".jpg"
 
         unique_filename = (
             f"{uuid.uuid4()}"
@@ -121,7 +165,10 @@ async def predict_disease(
         # ---------------------------------
 
         prediction_result = (
-            model_service.predict_disease(image)
+            model_service.predict_disease(
+                image,
+                confirmed_symptoms=confirmed_symptoms
+            )
         )
 
         # ---------------------------------
@@ -139,23 +186,30 @@ async def predict_disease(
 
         history_data = {
             "user_id": object_id,
-
-            "prediction": prediction_result[
-                "prediction"
-            ],
-
-            "confidence": prediction_result[
-                "confidence"
-            ],
-
+            "prediction": prediction_result["prediction"],
+            "confidence": prediction_result["confidence"],
+            "confidence_level": prediction_result.get("confidence_level", "high"),
+            "is_uncertain": prediction_result.get("is_uncertain", False),
+            "reliability_note": prediction_result.get("reliability_note", ""),
             "image_url": image_url,
-
-            "created_at": datetime.now()
+            "created_at": datetime.now(),
+            "status": prediction_result.get("status", "accepted"),
+            "plant_species": prediction_result.get("plant_species", "Unknown"),
+            "species_confidence": prediction_result.get("species_confidence", 0.0),
+            "is_potato_screening": prediction_result.get("is_potato_screening", False),
+            "requires_symptom_confirmation": prediction_result.get("requires_symptom_confirmation", False),
+            "symptoms_confirmed": prediction_result.get("symptoms_confirmed", False),
+            "safety_warning": prediction_result.get("safety_warning", ""),
+            "treatment_available": prediction_result.get("treatment_available", False)
         }
 
-        result = disease_history_collection.insert_one(
-            history_data
-        )
+        if object_id:
+            result = disease_history_collection.insert_one(
+                history_data
+            )
+            history_id = str(result.inserted_id)
+        else:
+            history_id = "demo_guest"
 
         # ---------------------------------
         # RETURN RESULT
@@ -163,31 +217,44 @@ async def predict_disease(
 
         return {
             "message": (
-                "Disease prediction completed "
-                "and saved successfully!"
+                "Disease screening candidate "
+                "generated and saved successfully!"
             ),
-
-            "history_id": str(result.inserted_id),
-
-            "prediction": prediction_result[
-                "prediction"
-            ],
-
-            "confidence": prediction_result[
-                "confidence"
-            ],
-
-            "image_url": image_url
+            "history_id": history_id,
+            "prediction": prediction_result["prediction"],
+            "confidence": prediction_result["confidence"],
+            "confidence_level": prediction_result.get("confidence_level", "high"),
+            "is_uncertain": prediction_result.get("is_uncertain", False),
+            "reliability_note": prediction_result.get("reliability_note", ""),
+            "second_prediction": prediction_result.get("second_prediction"),
+            "confidence_margin": prediction_result.get("confidence_margin"),
+            "supported_crops": prediction_result.get("supported_crops", []),
+            "disclaimer": prediction_result.get("disclaimer", ""),
+            "image_url": image_url,
+            "status": prediction_result.get("status", "accepted"),
+            "plant_species": prediction_result.get("plant_species", "Unknown"),
+            "species_confidence": prediction_result.get("species_confidence", 0.0),
+            "is_potato_screening": prediction_result.get("is_potato_screening", False),
+            "requires_symptom_confirmation": prediction_result.get("requires_symptom_confirmation", False),
+            "symptoms_confirmed": prediction_result.get("symptoms_confirmed", False),
+            "safety_warning": prediction_result.get("safety_warning", ""),
+            "treatment_available": prediction_result.get("treatment_available", False)
         }
 
     except HTTPException:
         raise
 
     except Exception as error:
+        # Prevent exposing internal filesystem paths or stack traces
+        err_str = str(error)
+        if ":" in err_str and ("\\" in err_str or "/" in err_str):
+            safe_msg = "An internal processing error occurred during prediction."
+        else:
+            safe_msg = f"Prediction failed: {err_str}"
 
         raise HTTPException(
             status_code=500,
-            detail=f"Prediction failed: {str(error)}"
+            detail=safe_msg
         )
 
 
@@ -202,22 +269,8 @@ def get_disease_history(user_id: str):
     # VALIDATE USER ID
     # ---------------------------------
 
-    try:
-        object_id = ObjectId(user_id)
-
-    except Exception:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid user ID."
-        )
-
-    # ---------------------------------
-    # CHECK USER EXISTS
-    # ---------------------------------
-
-    user = users_collection.find_one(
-        {"_id": object_id}
-    )
+    from app.routers.crop import find_user
+    user, object_id = find_user(user_id)
 
     if not user:
         raise HTTPException(
@@ -244,15 +297,34 @@ def get_disease_history(user_id: str):
         item["_id"] = str(item["_id"])
         item["user_id"] = str(item["user_id"])
 
+        # Ensure safe fallback defaults for legacy records
+        if "status" not in item:
+            item["status"] = "legacy_record"
+        if "treatment_available" not in item:
+            pred = str(item.get("prediction", "")).lower()
+            if "potato" in pred or item.get("is_uncertain", False):
+                item["treatment_available"] = False
+            elif "healthy" in pred:
+                item["treatment_available"] = False
+            else:
+                item["treatment_available"] = True
+        if "is_potato_screening" not in item:
+            item["is_potato_screening"] = "potato" in str(item.get("prediction", "")).lower()
+        if "requires_symptom_confirmation" not in item:
+            item["requires_symptom_confirmation"] = item["is_potato_screening"]
+
         # ---------------------------------
-        # ADD FULL RENDER URL FOR FRONTEND
+        # CLEAN IMAGE URL FOR FRONTEND
         # ---------------------------------
 
-        if "image_url" in item:
-            item["image_url"] = (
-                "https://agrivoice-e14c.onrender.com"
-                + item["image_url"]
-            )
+        if "image_url" in item and item["image_url"]:
+            url_val = str(item["image_url"])
+            if url_val.startswith("http://") or url_val.startswith("https://"):
+                try:
+                    from urllib.parse import urlparse
+                    item["image_url"] = urlparse(url_val).path
+                except Exception:
+                    pass
 
     # ---------------------------------
     # RETURN HISTORY

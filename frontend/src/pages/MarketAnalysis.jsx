@@ -12,89 +12,96 @@ import {
   CheckCircle
 } from "lucide-react";
 
+import { getCropHistory } from "../api";
+import { useLanguage } from "../context/LanguageContext";
+import LanguageSelector from "../components/common/LanguageSelector";
 import "./MarketAnalysis.css";
-
-const API_BASE_URL = "https://agrivoice-e14c.onrender.com";
 
 function MarketAnalysis() {
   const navigate = useNavigate();
+  const { t, formatCropDisplayName } = useLanguage();
 
   const [marketData, setMarketData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    loadMarketAnalysis();
-  }, []);
+    let isMounted = true;
 
-  const loadMarketAnalysis = async () => {
-    try {
-      setLoading(true);
-      setError("");
+    async function fetchMarketAnalysis() {
+      try {
+        const userId = localStorage.getItem("user_id");
 
-      const userId = localStorage.getItem("user_id");
+        if (!userId) {
+          if (isMounted) {
+            setError(t("common.sessionExpired", "Please login again to continue."));
+            setLoading(false);
+          }
+          return;
+        }
 
-      console.log("Market Analysis User ID:", userId);
+        const data = await getCropHistory(userId);
 
-      if (!userId) {
-        setError("Please login again.");
-        return;
+        if (!isMounted) return;
+
+        if (!data.history || data.history.length === 0) {
+          setError(
+            t("market.noCropHistoryError", "No crop recommendation available. Please get a crop recommendation first.")
+          );
+          setLoading(false);
+          return;
+        }
+
+        // Latest recommendation
+        const latest = data.history[0];
+
+        // Make sure market analysis exists
+        if (
+          !latest.market_analysis ||
+          latest.market_analysis.length === 0
+        ) {
+          setError(
+            t("market.noMarketDataError", "No market analysis data available for the latest recommendation.")
+          );
+          setLoading(false);
+          return;
+        }
+
+        setMarketData(latest);
+
+      } catch (err) {
+        if (isMounted) {
+          console.error("Market Analysis Error:", err);
+          const msg = err.message || t("market.loadErrorDefault", "Failed to load market analysis.");
+          if (
+            msg.toLowerCase().includes("user not found") ||
+            msg.toLowerCase().includes("invalid user id")
+          ) {
+            try {
+              localStorage.removeItem("user_id");
+              localStorage.removeItem("user_name");
+              localStorage.removeItem("user_email");
+            } catch {
+              // Ignore
+            }
+            navigate("/login");
+          } else {
+            setError(msg);
+          }
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-
-      const response = await fetch(
-        `${API_BASE_URL}/crop/history/${userId}`
-      );
-
-      console.log("Market API status:", response.status);
-
-      const data = await response.json();
-
-      console.log("Market API data:", data);
-
-      if (!response.ok) {
-        throw new Error(
-          data.detail || "Failed to load market analysis."
-        );
-      }
-
-      if (!data.history || data.history.length === 0) {
-        setError(
-          "No crop recommendation available. Please get a crop recommendation first."
-        );
-        return;
-      }
-
-      // Latest recommendation
-      const latest = data.history[0];
-
-      // Make sure market analysis exists
-      if (
-        !latest.market_analysis ||
-        latest.market_analysis.length === 0
-      ) {
-        setError(
-          "No market analysis data available for the latest recommendation."
-        );
-        return;
-      }
-
-      setMarketData(latest);
-
-    } catch (err) {
-      console.error("Market Analysis Error:", err);
-      setError(err.message || "Failed to load market analysis.");
-    } finally {
-      setLoading(false);
     }
-  };
 
-  const formatCropName = (crop) => {
-    if (!crop) return "";
+    fetchMarketAnalysis();
 
-    return crop
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (letter) => letter.toUpperCase());
-  };
+    return () => {
+      isMounted = false;
+    };
+  }, [t, navigate]);
 
   const formatMoney = (value) => {
     if (value === undefined || value === null) {
@@ -118,13 +125,17 @@ function MarketAnalysis() {
           <span>TerraNex</span>
         </div>
 
-        <button
-          className="market-back-btn"
-          onClick={() => navigate("/dashboard")}
-        >
-          <ArrowLeft size={18} />
-          Back to Dashboard
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <LanguageSelector />
+
+          <button
+            className="market-back-btn"
+            onClick={() => navigate("/dashboard")}
+          >
+            <ArrowLeft size={18} />
+            <span>{t("common.backToDashboard", "Back to Dashboard")}</span>
+          </button>
+        </div>
 
       </nav>
 
@@ -139,11 +150,10 @@ function MarketAnalysis() {
           </div>
 
           <div>
-            <h1>Market Analysis</h1>
+            <h1>{t("market.pageTitle", "Market Analysis")}</h1>
 
             <p>
-              Analyze market prices, estimated costs and
-              potential profit for your recommended crops.
+              {t("market.pageDesc", "Analyze market prices, estimated costs and potential profit for your recommended crops.")}
             </p>
           </div>
 
@@ -153,7 +163,7 @@ function MarketAnalysis() {
         {/* LOADING */}
         {loading && (
           <div className="market-message">
-            Loading market analysis...
+            {t("market.loadingText", "Loading market analysis...")}
           </div>
         )}
 
@@ -183,17 +193,16 @@ function MarketAnalysis() {
 
               <div>
 
-                <p>BEST OVERALL CROP</p>
+                <p>{t("market.bestOverallCropBadge", "BEST OVERALL CROP")}</p>
 
                 <h2>
-                  {formatCropName(
+                  {formatCropDisplayName(
                     marketData.best_overall_crop
                   )}
                 </h2>
 
                 <span>
-                  Selected using AI recommendation and
-                  market analysis.
+                  {t("market.bestOverallCropDesc", "Selected using AI recommendation and market analysis.")}
                 </span>
 
               </div>
@@ -209,11 +218,10 @@ function MarketAnalysis() {
                 <Sprout size={25} />
 
                 <div>
-                  <h2>AI Recommended Crops</h2>
+                  <h2>{t("market.aiRecommendedTitle", "AI Recommended Crops")}</h2>
 
                   <p>
-                    Crops identified as suitable for your
-                    farm conditions.
+                    {t("market.aiRecommendedDesc", "Crops identified as suitable for your farm conditions.")}
                   </p>
                 </div>
 
@@ -233,10 +241,10 @@ function MarketAnalysis() {
                       <div>
 
                         <h3>
-                          {formatCropName(item.crop)}
+                          {formatCropDisplayName(item.crop)}
                         </h3>
 
-                        <p>AI Confidence</p>
+                        <p>{t("crop.confidenceLabel", "AI Confidence")}</p>
 
                       </div>
 
@@ -263,11 +271,10 @@ function MarketAnalysis() {
 
                 <div>
 
-                  <h2>Market Details</h2>
+                  <h2>{t("market.marketDetailsTitle", "Market Details")}</h2>
 
                   <p>
-                    Latest available market information
-                    for recommended crops.
+                    {t("market.marketDetailsDesc", "Latest available market information for recommended crops.")}
                   </p>
 
                 </div>
@@ -279,12 +286,12 @@ function MarketAnalysis() {
 
                 <div className="market-table-header">
 
-                  <span>Crop</span>
-                  <span>ML Confidence</span>
-                  <span>Market Price</span>
-                  <span>Markets</span>
-                  <span>Price Score</span>
-                  <span>Profit</span>
+                  <span>{t("market.colCrop", "Crop")}</span>
+                  <span>{t("market.colMlConfidence", "ML Confidence")}</span>
+                  <span>{t("market.colMarketPrice", "Market Price")}</span>
+                  <span>{t("market.colMarkets", "Markets")}</span>
+                  <span>{t("market.colPriceScore", "Price Score")}</span>
+                  <span>{t("market.colProfit", "Profit")}</span>
 
                 </div>
 
@@ -298,7 +305,7 @@ function MarketAnalysis() {
                     >
 
                       <strong>
-                        {formatCropName(item.crop)}
+                        {formatCropDisplayName(item.crop)}
                       </strong>
 
                       <span>
@@ -353,8 +360,8 @@ function MarketAnalysis() {
                     <div>
 
                       <p>
-                        {formatCropName(item.crop)}
-                        {" — Market Price"}
+                        {formatCropDisplayName(item.crop)}
+                        {` — ${t("market.marketPriceSuffix", "Market Price")}`}
                       </p>
 
                       <h3>
@@ -386,8 +393,8 @@ function MarketAnalysis() {
                     <div>
 
                       <p>
-                        {formatCropName(item.crop)}
-                        {" — Estimated Cost"}
+                        {formatCropDisplayName(item.crop)}
+                        {` — ${t("market.estimatedCostSuffix", "Estimated Cost")}`}
                       </p>
 
                       <h3>
@@ -419,8 +426,8 @@ function MarketAnalysis() {
                     <div>
 
                       <p>
-                        {formatCropName(item.crop)}
-                        {" — Estimated Profit"}
+                        {formatCropDisplayName(item.crop)}
+                        {` — ${t("market.estimatedProfitSuffix", "Estimated Profit")}`}
                       </p>
 
                       <h3>

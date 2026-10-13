@@ -40,10 +40,25 @@ def analyze_market(data: MarketRequest):
             "analysis": []
         }
 
+    market_score_map = {
+        item["crop"].lower().strip(): float(item.get("combined_score", 0))
+        for item in results
+    }
+
+    best_overall_crop = None
+    best_score = -1.0
+    for item in recommendations:
+        crop_name = item["crop"].lower().strip()
+        confidence = float(item.get("confidence", 0))
+        score = market_score_map.get(crop_name, round(0.70 * confidence, 2))
+        if score > best_score:
+            best_score = score
+            best_overall_crop = item["crop"]
+
     return {
         "message": "Market analysis completed successfully!",
         "analysis": results,
-        "best_overall_crop": results[0]["crop"]
+        "best_overall_crop": best_overall_crop or (results[0]["crop"] if results else None)
     }
 
 

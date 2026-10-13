@@ -4,68 +4,64 @@
 
 .history-page {
   min-height: 100vh;
-  background: #f6faf7;
-  color: #1d3326;
+  background: var(--color-bg-page);
+  color: var(--color-text-main);
+  font-family: var(--font-body);
 }
 
 /* Navbar */
 
 .history-navbar {
   height: 72px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   padding: 0 7%;
-
-  background: white;
-
-  border-bottom: 1px solid #e3ece5;
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .history-logo {
   display: flex;
   align-items: center;
   gap: 10px;
-
-  color: #236b3d;
-
+  color: var(--color-primary);
   font-size: 24px;
   font-weight: 700;
-
   cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.history-logo:hover {
+  opacity: 0.85;
 }
 
 .history-back-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-
   padding: 10px 16px;
-
-  border: none;
-  border-radius: 8px;
-
-  background: #eef4ef;
-  color: #315941;
-
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-main);
   cursor: pointer;
-
   font-weight: 600;
+  font-size: 14px;
+  transition: var(--transition-fast);
 }
 
 .history-back-btn:hover {
-  background: #e1ece3;
+  background: var(--color-mint);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 /* Main */
 
 .history-content {
   width: min(1100px, 90%);
-
   margin: auto;
-
   padding: 50px 0 70px;
 }
 
@@ -75,34 +71,32 @@
   display: flex;
   align-items: center;
   gap: 18px;
-
   margin-bottom: 40px;
 }
 
 .history-heading-icon {
   width: 62px;
   height: 62px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border-radius: 15px;
-
-  background: #e4f5e7;
-  color: #278241;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .history-heading h1 {
   margin: 0 0 7px;
-
   font-size: 32px;
+  font-family: var(--font-heading);
+  color: var(--color-text-main);
 }
 
 .history-heading p {
   margin: 0;
-
-  color: #687c6e;
+  color: var(--color-text-muted);
 }
 
 /* Sections */
@@ -115,25 +109,19 @@
   display: flex;
   align-items: center;
   gap: 12px;
-
   margin-bottom: 20px;
-
-  color: #236b3d;
+  color: var(--color-primary);
 }
 
 .section-title h2 {
   margin: 0 0 4px;
-
-  color: #234c31;
-
+  color: var(--color-text-main);
   font-size: 22px;
 }
 
 .section-title p {
   margin: 0;
-
-  color: #718177;
-
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
@@ -141,20 +129,16 @@
 
 .history-grid {
   display: grid;
-
   grid-template-columns: repeat(2, 1fr);
-
   gap: 20px;
 }
 
 .history-card {
   overflow: hidden;
-
-  background: white;
-
-  border: 1px solid #e1ebe3;
-
-  border-radius: 16px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Disease */
@@ -162,10 +146,9 @@
 .history-image {
   width: 100%;
   height: 210px;
-
   display: block;
-
   object-fit: cover;
+  background: var(--color-bg-elevated);
 }
 
 .history-card-content {
@@ -174,27 +157,22 @@
 
 .history-card-content h3 {
   margin: 0 0 10px;
-
-  color: #234c31;
-
+  color: var(--color-text-main);
   font-size: 20px;
 }
 
 .confidence {
-  color: #687c6e;
-
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
 .confidence strong {
-  color: #278241;
+  color: var(--color-primary);
 }
 
 .history-date {
   margin: 14px 0 0;
-
-  color: #98a69c;
-
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
@@ -202,99 +180,84 @@
 
 .crop-history-card {
   display: flex;
-
   padding: 22px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .crop-history-icon {
   min-width: 65px;
   height: 65px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   margin-right: 18px;
-
   border-radius: 14px;
-
-  background: #e4f5e7;
-  color: #278241;
+  background: var(--color-mint);
+  color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .best-label {
   margin: 0 0 5px;
-
-  color: #718177;
-
+  color: var(--color-text-muted);
   font-size: 11px;
   font-weight: 700;
-
   letter-spacing: 1px;
 }
 
 .crop-history-card h3 {
   margin-bottom: 15px;
+  color: var(--color-text-main);
 }
 
 /* Recommendations */
 
 .recommendation-history {
   display: flex;
-
   flex-direction: column;
-
   gap: 7px;
 }
 
 .recommendation-history-row {
   display: flex;
   justify-content: space-between;
-
   padding: 9px 12px;
-
   border-radius: 7px;
-
-  background: #eef8f0;
-
-  color: #315941;
-
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-main);
   font-size: 14px;
 }
 
 .recommendation-history-row strong {
-  color: #236b3d;
+  color: var(--color-primary);
 }
 
 /* Market */
 
 .history-market {
   margin-top: 16px;
-
   padding: 14px;
-
   border-radius: 10px;
-
-  background: #fff8ec;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
 }
 
 .history-market h4 {
   margin: 0 0 8px;
-
-  color: #8a5a16;
+  color: var(--color-warning);
 }
 
 .market-history-row {
   display: flex;
   justify-content: space-between;
-
   padding: 6px 0;
-
-  color: #5e503d;
-
+  color: var(--color-text-main);
   font-size: 14px;
-
-  border-bottom: 1px solid #eee0c8;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .market-history-row:last-child {
@@ -305,46 +268,35 @@
 
 .empty-history {
   padding: 35px;
-
   text-align: center;
-
-  background: white;
-
-  border: 1px dashed #cbd9ce;
-
+  background: var(--color-bg-surface);
+  border: 1px dashed var(--color-border);
   border-radius: 14px;
-
-  color: #7c8b81;
+  color: var(--color-text-muted);
 }
 
 /* Messages */
 
 .history-message {
   padding: 40px;
-
   text-align: center;
-
-  color: #687c6e;
+  color: var(--color-text-muted);
 }
 
 .history-error {
   display: flex;
   align-items: center;
   gap: 10px;
-
   padding: 15px;
-
   border-radius: 10px;
-
-  background: #fff0ef;
-
-  color: #c0392b;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
 }
 
 /* Mobile */
 
 @media (max-width: 800px) {
-
   .history-grid {
     grid-template-columns: 1fr;
   }
@@ -355,7 +307,6 @@
 }
 
 @media (max-width: 600px) {
-
   .history-content {
     width: 92%;
     padding-top: 35px;
@@ -393,6 +344,7 @@
     margin-bottom: 15px;
   }
 }
+
 /* =================================
    MARKET HISTORY DETAILS
 ================================= */
@@ -410,9 +362,9 @@
 
 .market-history-card {
   padding: 12px;
-  background: #f7fbf7;
+  background: var(--color-bg-surface);
   border-radius: 10px;
-  border: 1px solid #e3ebe5;
+  border: 1px solid var(--color-border);
 }
 
 .market-history-row {
@@ -425,25 +377,147 @@
 }
 
 .market-history-row span {
-  color: #66756a;
+  color: var(--color-text-muted);
 }
 
 .market-history-row strong {
-  color: #24352a;
+  color: var(--color-text-main);
 }
 
 .profit-row {
   margin-top: 5px;
   padding-top: 10px;
-  border-top: 1px solid #dfe8e1;
+  border-top: 1px solid var(--color-border);
 }
 
 .profit-row strong {
   font-size: 15px;
+  color: var(--color-primary);
 }
 
 .recommendation-history h4 {
   margin: 0 0 10px;
   font-size: 14px;
-  color: #24352a;
+  color: var(--color-text-main);
+}
+
+.history-uncertain-tag {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 10px;
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-warning);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* =================================
+   HISTORY TWO-STAGE SAFETY BADGES
+================================= */
+
+.history-status-badge {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.h-badge-accepted {
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success);
+  color: var(--color-success);
+}
+
+.h-badge-potato {
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning);
+}
+
+.h-badge-rejected {
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+}
+
+.h-badge-abstained {
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning);
+}
+
+.h-badge-discrepancy {
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+}
+
+.h-badge-degraded {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.h-badge-legacy {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.history-crop-label {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 4px 0 6px;
+}
+
+.history-crop-label strong {
+  color: var(--color-text-main);
+}
+
+.history-safety-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.history-treatment-tag {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.history-treatment-tag.permitted {
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success);
+  color: var(--color-success);
+}
+
+.history-treatment-tag.suppressed {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.history-symptom-tag {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning);
 }

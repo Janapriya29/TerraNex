@@ -1,0 +1,374 @@
+{
+  "metadata": {
+    "timestamp": "2026-10-12 20:02:42",
+    "model_path": "C:\\Users\\janap\\Desktop\\TerraNex-GitHub\\models\\crop_disease_model.keras",
+    "evaluation_scope": "Full ID (n=2,220) vs Comprehensive OOD (n=1,231) + Blurry (n=100)"
+  },
+  "id_metrics": {
+    "total_tested": 2220,
+    "total_correct": 2130,
+    "overall_accuracy_pct": 95.95,
+    "per_class": {
+      "Tomato___Bacterial_spot": {
+        "total": 425,
+        "correct": 411,
+        "accuracy_pct": 96.71,
+        "mean_conf": 93.24,
+        "median_conf": 98.06
+      },
+      "Tomato___Early_blight": {
+        "total": 200,
+        "correct": 167,
+        "accuracy_pct": 83.5,
+        "mean_conf": 82.0,
+        "median_conf": 87.53
+      },
+      "Tomato___Late_blight": {
+        "total": 382,
+        "correct": 350,
+        "accuracy_pct": 91.62,
+        "mean_conf": 90.06,
+        "median_conf": 98.07
+      },
+      "Tomato___healthy": {
+        "total": 318,
+        "correct": 318,
+        "accuracy_pct": 100.0,
+        "mean_conf": 99.47,
+        "median_conf": 99.98
+      },
+      "Potato___Early_blight": {
+        "total": 200,
+        "correct": 197,
+        "accuracy_pct": 98.5,
+        "mean_conf": 97.72,
+        "median_conf": 99.85
+      },
+      "Potato___Late_blight": {
+        "total": 200,
+        "correct": 196,
+        "accuracy_pct": 98.0,
+        "mean_conf": 96.07,
+        "median_conf": 99.64
+      },
+      "Pepper,_bell___Bacterial_spot": {
+        "total": 200,
+        "correct": 199,
+        "accuracy_pct": 99.5,
+        "mean_conf": 96.69,
+        "median_conf": 99.47
+      },
+      "Pepper,_bell___healthy": {
+        "total": 295,
+        "correct": 292,
+        "accuracy_pct": 98.98,
+        "mean_conf": 97.19,
+        "median_conf": 99.56
+      }
+    }
+  },
+  "ood_metrics": {
+    "total_tested": 1231,
+    "classes": {
+      "Potato___healthy": {
+        "tested_count": 31,
+        "available_count": 31,
+        "mean_conf": 75.03,
+        "median_conf": 75.94,
+        "min_conf": 37.78,
+        "max_conf": 99.21,
+        "conf_ge_70_pct": 64.52,
+        "conf_ge_80_pct": 48.39,
+        "conf_ge_90_pct": 22.58,
+        "assigned_classes": {
+          "Potato___Late_blight": 19,
+          "Tomato___healthy": 10,
+          "Pepper,_bell___healthy": 2
+        }
+      },
+      "Apple___healthy": {
+        "tested_count": 200,
+        "available_count": 329,
+        "mean_conf": 77.98,
+        "median_conf": 84.45,
+        "min_conf": 31.21,
+        "max_conf": 100.0,
+        "conf_ge_70_pct": 67.0,
+        "conf_ge_80_pct": 55.5,
+        "conf_ge_90_pct": 39.5,
+        "assigned_classes": {
+          "Tomato___healthy": 124,
+          "Tomato___Bacterial_spot": 9,
+          "Potato___Late_blight": 27,
+          "Pepper,_bell___healthy": 36,
+          "Potato___Early_blight": 2,
+          "Tomato___Late_blight": 2
+        }
+      },
+      "Corn_(maize)___healthy": {
+        "tested_count": 200,
+        "available_count": 233,
+        "mean_conf": 85.02,
+        "median_conf": 91.75,
+        "min_conf": 42.57,
+        "max_conf": 99.98,
+        "conf_ge_70_pct": 82.0,
+        "conf_ge_80_pct": 68.0,
+        "conf_ge_90_pct": 52.5,
+        "assigned_classes": {
+          "Tomato___Late_blight": 125,
+          "Pepper,_bell___healthy": 73,
+          "Tomato___Early_blight": 2
+        }
+      },
+      "Grape___Black_rot": {
+        "tested_count": 200,
+        "available_count": 236,
+        "mean_conf": 75.94,
+        "median_conf": 79.43,
+        "min_conf": 29.28,
+        "max_conf": 99.89,
+        "conf_ge_70_pct": 65.0,
+        "conf_ge_80_pct": 49.5,
+        "conf_ge_90_pct": 28.0,
+        "assigned_classes": {
+          "Tomato___Early_blight": 167,
+          "Tomato___Bacterial_spot": 15,
+          "Potato___Early_blight": 7,
+          "Tomato___healthy": 9,
+          "Tomato___Late_blight": 2
+        }
+      },
+      "Soybean___healthy": {
+        "tested_count": 200,
+        "available_count": 1018,
+        "mean_conf": 77.2,
+        "median_conf": 78.89,
+        "min_conf": 32.91,
+        "max_conf": 99.92,
+        "conf_ge_70_pct": 63.5,
+        "conf_ge_80_pct": 48.5,
+        "conf_ge_90_pct": 36.0,
+        "assigned_classes": {
+          "Tomato___healthy": 109,
+          "Tomato___Bacterial_spot": 4,
+          "Pepper,_bell___healthy": 53,
+          "Potato___Late_blight": 27,
+          "Tomato___Late_blight": 1,
+          "Potato___Early_blight": 4,
+          "Pepper,_bell___Bacterial_spot": 2
+        }
+      },
+      "Peach___Bacterial_spot": {
+        "tested_count": 200,
+        "available_count": 459,
+        "mean_conf": 69.93,
+        "median_conf": 73.47,
+        "min_conf": 28.24,
+        "max_conf": 99.92,
+        "conf_ge_70_pct": 54.0,
+        "conf_ge_80_pct": 39.5,
+        "conf_ge_90_pct": 23.5,
+        "assigned_classes": {
+          "Pepper,_bell___Bacterial_spot": 79,
+          "Tomato___Late_blight": 28,
+          "Tomato___Bacterial_spot": 54,
+          "Tomato___Early_blight": 20,
+          "Pepper,_bell___healthy": 7,
+          "Tomato___healthy": 3,
+          "Potato___Late_blight": 3,
+          "Potato___Early_blight": 6
+        }
+      },
+      "Strawberry___Leaf_scorch": {
+        "tested_count": 200,
+        "available_count": 222,
+        "mean_conf": 76.05,
+        "median_conf": 80.67,
+        "min_conf": 30.85,
+        "max_conf": 99.98,
+        "conf_ge_70_pct": 62.5,
+        "conf_ge_80_pct": 50.5,
+        "conf_ge_90_pct": 35.5,
+        "assigned_classes": {
+          "Tomato___Early_blight": 60,
+          "Potato___Early_blight": 110,
+          "Tomato___Bacterial_spot": 18,
+          "Potato___Late_blight": 3,
+          "Tomato___Late_blight": 9
+        }
+      }
+    },
+    "overall_mean_conf": 76.97,
+    "overall_median_conf": 81.07,
+    "overall_assigned_distribution": {
+      "Potato___Late_blight": 79,
+      "Tomato___healthy": 255,
+      "Pepper,_bell___healthy": 171,
+      "Tomato___Bacterial_spot": 100,
+      "Potato___Early_blight": 129,
+      "Tomato___Late_blight": 167,
+      "Tomato___Early_blight": 249,
+      "Pepper,_bell___Bacterial_spot": 81
+    }
+  },
+  "blurry_metrics": {
+    "tested_count": 100,
+    "sigma_5": {
+      "mean_conf": 81.11,
+      "median_conf": 86.69,
+      "pct_below_70": 26.0
+    },
+    "sigma_10": {
+      "mean_conf": 72.19,
+      "median_conf": 71.66,
+      "pct_below_70": 47.0
+    },
+    "sigma_15": {
+      "mean_conf": 85.4,
+      "median_conf": 90.63,
+      "pct_below_70": 14.0
+    }
+  },
+  "confidence_threshold_tradeoffs": [
+    {
+      "threshold_pct": 50.0,
+      "id_tested": 2220,
+      "ood_tested": 1231,
+      "false_rejection_count_id": 28,
+      "false_rejection_rate_id_pct": 1.26,
+      "false_acceptance_count_ood": 1081,
+      "false_acceptance_rate_ood_pct": 87.81,
+      "correct_acceptance_rate_id_pct": 98.74,
+      "correct_rejection_rate_ood_pct": 12.19
+    },
+    {
+      "threshold_pct": 60.0,
+      "id_tested": 2220,
+      "ood_tested": 1231,
+      "false_rejection_count_id": 87,
+      "false_rejection_rate_id_pct": 3.92,
+      "false_acceptance_count_ood": 939,
+      "false_acceptance_rate_ood_pct": 76.28,
+      "correct_acceptance_rate_id_pct": 96.08,
+      "correct_rejection_rate_ood_pct": 23.72
+    },
+    {
+      "threshold_pct": 70.0,
+      "id_tested": 2220,
+      "ood_tested": 1231,
+      "false_rejection_count_id": 149,
+      "false_rejection_rate_id_pct": 6.71,
+      "false_acceptance_count_ood": 808,
+      "false_acceptance_rate_ood_pct": 65.64,
+      "correct_acceptance_rate_id_pct": 93.29,
+      "correct_rejection_rate_ood_pct": 34.36
+    },
+    {
+      "threshold_pct": 75.0,
+      "id_tested": 2220,
+      "ood_tested": 1231,
+      "false_rejection_count_id": 197,
+      "false_rejection_rate_id_pct": 8.87,
+      "false_acceptance_count_ood": 717,
+      "false_acceptance_rate_ood_pct": 58.25,
+      "correct_acceptance_rate_id_pct": 91.13,
+      "correct_rejection_rate_ood_pct": 41.75
+    },
+    {
+      "threshold_pct": 80.0,
+      "id_tested": 2220,
+      "ood_tested": 1231,
+      "false_rejection_count_id": 242,
+      "false_rejection_rate_id_pct": 10.9,
+      "false_acceptance_count_ood": 638,
+      "false_acceptance_rate_ood_pct": 51.83,
+      "correct_acceptance_rate_id_pct": 89.1,
+      "correct_rejection_rate_ood_pct": 48.17
+    },
+    {
+      "threshold_pct": 85.0,
+      "id_tested": 2220,
+      "ood_tested": 1231,
+      "false_rejection_count_id": 286,
+      "false_rejection_rate_id_pct": 12.88,
+      "false_acceptance_count_ood": 541,
+      "false_acceptance_rate_ood_pct": 43.95,
+      "correct_acceptance_rate_id_pct": 87.12,
+      "correct_rejection_rate_ood_pct": 56.05
+    },
+    {
+      "threshold_pct": 90.0,
+      "id_tested": 2220,
+      "ood_tested": 1231,
+      "false_rejection_count_id": 383,
+      "false_rejection_rate_id_pct": 17.25,
+      "false_acceptance_count_ood": 437,
+      "false_acceptance_rate_ood_pct": 35.5,
+      "correct_acceptance_rate_id_pct": 82.75,
+      "correct_rejection_rate_ood_pct": 64.5
+    },
+    {
+      "threshold_pct": 95.0,
+      "id_tested": 2220,
+      "ood_tested": 1231,
+      "false_rejection_count_id": 549,
+      "false_rejection_rate_id_pct": 24.73,
+      "false_acceptance_count_ood": 293,
+      "false_acceptance_rate_ood_pct": 23.8,
+      "correct_acceptance_rate_id_pct": 75.27,
+      "correct_rejection_rate_ood_pct": 76.2
+    }
+  ],
+  "margin_threshold_tradeoffs": [
+    {
+      "margin_pct": 20.0,
+      "false_rejection_count_id": 58,
+      "false_rejection_rate_id_pct": 2.61,
+      "false_acceptance_count_ood": 1048,
+      "false_acceptance_rate_ood_pct": 85.13
+    },
+    {
+      "margin_pct": 30.0,
+      "false_rejection_count_id": 89,
+      "false_rejection_rate_id_pct": 4.01,
+      "false_acceptance_count_ood": 956,
+      "false_acceptance_rate_ood_pct": 77.66
+    },
+    {
+      "margin_pct": 40.0,
+      "false_rejection_count_id": 118,
+      "false_rejection_rate_id_pct": 5.32,
+      "false_acceptance_count_ood": 873,
+      "false_acceptance_rate_ood_pct": 70.92
+    },
+    {
+      "margin_pct": 50.0,
+      "false_rejection_count_id": 167,
+      "false_rejection_rate_id_pct": 7.52,
+      "false_acceptance_count_ood": 792,
+      "false_acceptance_rate_ood_pct": 64.34
+    },
+    {
+      "margin_pct": 60.0,
+      "false_rejection_count_id": 222,
+      "false_rejection_rate_id_pct": 10.0,
+      "false_acceptance_count_ood": 697,
+      "false_acceptance_rate_ood_pct": 56.62
+    },
+    {
+      "margin_pct": 70.0,
+      "false_rejection_count_id": 265,
+      "false_rejection_rate_id_pct": 11.94,
+      "false_acceptance_count_ood": 592,
+      "false_acceptance_rate_ood_pct": 48.09
+    },
+    {
+      "margin_pct": 80.0,
+      "false_rejection_count_id": 359,
+      "false_rejection_rate_id_pct": 16.17,
+      "false_acceptance_count_ood": 478,
+      "false_acceptance_rate_ood_pct": 38.83
+    }
+  ]
+}

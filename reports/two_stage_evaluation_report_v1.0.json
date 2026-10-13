@@ -1,0 +1,377 @@
+{
+  "report_metadata": {
+    "report_title": "TerraNex Two-Stage Disease Detection Evaluation Report",
+    "version": "v1.0",
+    "timestamp": "2026-10-12T21:07:27.333805",
+    "evaluation_duration_seconds": 114.1,
+    "stage1_model_path": "models/crop_species_model_v1.0.keras",
+    "stage1_model_sha256": "8f1441a0b9e5412e3424cbb4050599be155028ecc8b5ad4364de4b9aea8b6e8a",
+    "stage2_model_path": "models/crop_disease_model.keras",
+    "stage2_model_sha256": "215225ae176b23514bf59e39e2b7b521b4bcff2f600a504dc6cec712342a2c82",
+    "locked_thresholds": {
+      "tau_species": 0.6,
+      "tau_other": 0.2,
+      "delta_margin": 0.1
+    }
+  },
+  "cohort_1_quarantined_test_split": {
+    "cohort_name": "Quarantined Manifest Test Split",
+    "sample_size": 1417,
+    "raw_gatekeeper_accuracy": 0.9929,
+    "raw_macro_f1": 0.9929,
+    "unsupported_far": {
+      "rate": 0.0,
+      "percentage": 0.0,
+      "numerator_false_passed": 0,
+      "denominator_total_unsupported": 363,
+      "target": "<= 5.0%"
+    },
+    "supported_frr": {
+      "rate": 0.0228,
+      "percentage": 2.28,
+      "numerator_blocked": 24,
+      "falsely_rejected_as_unsupported": 14,
+      "abstained_as_uncertain": 10,
+      "denominator_total_supported": 1054,
+      "target": "<= 3.0%"
+    },
+    "accepted_supported_species_accuracy": {
+      "percentage": 99.9,
+      "numerator_correct_species": 1029,
+      "denominator_total_passed": 1030
+    },
+    "action_distribution": {
+      "ACCEPT_STAGE2": 1030,
+      "ABSTAIN_UNCERTAIN": 10,
+      "REJECT_UNSUPPORTED": 377,
+      "total": 1417
+    },
+    "per_class_metrics": {
+      "Tomato": {
+        "precision": 0.9836,
+        "recall": 0.9972,
+        "f1_score": 0.9903,
+        "support": 360
+      },
+      "Potato": {
+        "precision": 0.9969,
+        "recall": 0.9907,
+        "f1_score": 0.9938,
+        "support": 323
+      },
+      "Bell Pepper": {
+        "precision": 0.9973,
+        "recall": 0.9946,
+        "f1_score": 0.996,
+        "support": 371
+      },
+      "Unsupported": {
+        "precision": 0.9945,
+        "recall": 0.989,
+        "f1_score": 0.9917,
+        "support": 363
+      }
+    },
+    "confusion_matrix": {
+      "Tomato": {
+        "Tomato": 359,
+        "Potato": 1,
+        "Bell Pepper": 0,
+        "Unsupported": 0
+      },
+      "Potato": {
+        "Tomato": 3,
+        "Potato": 320,
+        "Bell Pepper": 0,
+        "Unsupported": 0
+      },
+      "Bell Pepper": {
+        "Tomato": 0,
+        "Potato": 0,
+        "Bell Pepper": 369,
+        "Unsupported": 2
+      },
+      "Unsupported": {
+        "Tomato": 3,
+        "Potato": 0,
+        "Bell Pepper": 1,
+        "Unsupported": 359
+      }
+    },
+    "supported_breakdown": {
+      "Tomato": {
+        "total_test_samples": 360,
+        "passed_to_stage2": 351,
+        "abstained_uncertain": 4,
+        "rejected_unsupported": 5,
+        "correct_species_passed": 351,
+        "accuracy_when_passed": 100.0
+      },
+      "Potato": {
+        "total_test_samples": 323,
+        "passed_to_stage2": 315,
+        "abstained_uncertain": 4,
+        "rejected_unsupported": 4,
+        "correct_species_passed": 314,
+        "accuracy_when_passed": 99.68
+      },
+      "Bell Pepper": {
+        "total_test_samples": 371,
+        "passed_to_stage2": 364,
+        "abstained_uncertain": 2,
+        "rejected_unsupported": 5,
+        "correct_species_passed": 364,
+        "accuracy_when_passed": 100.0
+      }
+    },
+    "unsupported_species_breakdown": {
+      "Apple": {
+        "total_test_samples": 33,
+        "rejected_as_unsupported": 33,
+        "abstained_as_uncertain": 0,
+        "falsely_passed_to_stage2": 0,
+        "rejection_rate_percentage": 100.0
+      },
+      "Blueberry": {
+        "total_test_samples": 33,
+        "rejected_as_unsupported": 33,
+        "abstained_as_uncertain": 0,
+        "falsely_passed_to_stage2": 0,
+        "rejection_rate_percentage": 100.0
+      },
+      "Cherry_(including_sour)": {
+        "total_test_samples": 33,
+        "rejected_as_unsupported": 33,
+        "abstained_as_uncertain": 0,
+        "falsely_passed_to_stage2": 0,
+        "rejection_rate_percentage": 100.0
+      },
+      "Corn_(maize)": {
+        "total_test_samples": 33,
+        "rejected_as_unsupported": 33,
+        "abstained_as_uncertain": 0,
+        "falsely_passed_to_stage2": 0,
+        "rejection_rate_percentage": 100.0
+      },
+      "Grape": {
+        "total_test_samples": 33,
+        "rejected_as_unsupported": 33,
+        "abstained_as_uncertain": 0,
+        "falsely_passed_to_stage2": 0,
+        "rejection_rate_percentage": 100.0
+      },
+      "Orange": {
+        "total_test_samples": 33,
+        "rejected_as_unsupported": 33,
+        "abstained_as_uncertain": 0,
+        "falsely_passed_to_stage2": 0,
+        "rejection_rate_percentage": 100.0
+      },
+      "Peach": {
+        "total_test_samples": 33,
+        "rejected_as_unsupported": 33,
+        "abstained_as_uncertain": 0,
+        "falsely_passed_to_stage2": 0,
+        "rejection_rate_percentage": 100.0
+      },
+      "Raspberry": {
+        "total_test_samples": 33,
+        "rejected_as_unsupported": 33,
+        "abstained_as_uncertain": 0,
+        "falsely_passed_to_stage2": 0,
+        "rejection_rate_percentage": 100.0
+      },
+      "Soybean": {
+        "total_test_samples": 33,
+        "rejected_as_unsupported": 33,
+        "abstained_as_uncertain": 0,
+        "falsely_passed_to_stage2": 0,
+        "rejection_rate_percentage": 100.0
+      },
+      "Squash": {
+        "total_test_samples": 33,
+        "rejected_as_unsupported": 33,
+        "abstained_as_uncertain": 0,
+        "falsely_passed_to_stage2": 0,
+        "rejection_rate_percentage": 100.0
+      },
+      "Strawberry": {
+        "total_test_samples": 33,
+        "rejected_as_unsupported": 33,
+        "abstained_as_uncertain": 0,
+        "falsely_passed_to_stage2": 0,
+        "rejection_rate_percentage": 100.0
+      }
+    }
+  },
+  "stage_2_safety_evaluation": {
+    "total_accepted_supported_images_evaluated": 1030,
+    "cross_stage_consistency": {
+      "consistent_count": 1000,
+      "discrepancy_count": 30,
+      "discrepancy_percentage": 2.91
+    },
+    "healthy_potato_blind_spot_evaluation": {
+      "total_healthy_potato_test_samples": 23,
+      "stage1_passed_to_stage2": 22,
+      "stage1_abstained_as_uncertain": 0,
+      "stage1_rejected_as_unsupported": 1,
+      "stage2_forced_choice_diagnoses": {
+        "Tomato___healthy": 10,
+        "Potato___Late_blight": 12
+      },
+      "safety_assessment": "CONFIRMED: Stage 2 lacks Potato___healthy. All accepted healthy potato leaves are forced into foliar blight categories or cross-species classes. Automated fungicide advice must be STRICTLY SUPPRESSED unless visual symptoms are confirmed by the user."
+    }
+  },
+  "cohort_2_real_unsupported_stress_cohort": {
+    "cohort_name": "Real Out-of-Sample Unsupported Stress Cohort (Non-Manifest Pool)",
+    "provenance": "Unused PlantVillage images not included in train/val/test splits",
+    "sample_size": 550,
+    "unsupported_far": {
+      "rate": 0.0018,
+      "percentage": 0.18,
+      "numerator_false_passed": 1,
+      "denominator_total": 550
+    },
+    "safe_interception_rate_percentage": 99.82,
+    "actions": {
+      "rejected_as_unsupported": 549,
+      "abstained_as_uncertain": 0,
+      "falsely_passed_to_stage2": 1
+    },
+    "per_species_breakdown": {
+      "Apple": {
+        "total": 50,
+        "rejected": 50,
+        "abstained": 0,
+        "falsely_passed": 0
+      },
+      "Blueberry": {
+        "total": 50,
+        "rejected": 50,
+        "abstained": 0,
+        "falsely_passed": 0
+      },
+      "Cherry_(including_sour)": {
+        "total": 50,
+        "rejected": 50,
+        "abstained": 0,
+        "falsely_passed": 0
+      },
+      "Corn_(maize)": {
+        "total": 50,
+        "rejected": 50,
+        "abstained": 0,
+        "falsely_passed": 0
+      },
+      "Grape": {
+        "total": 50,
+        "rejected": 50,
+        "abstained": 0,
+        "falsely_passed": 0
+      },
+      "Orange": {
+        "total": 50,
+        "rejected": 50,
+        "abstained": 0,
+        "falsely_passed": 0
+      },
+      "Peach": {
+        "total": 50,
+        "rejected": 50,
+        "abstained": 0,
+        "falsely_passed": 0
+      },
+      "Raspberry": {
+        "total": 50,
+        "rejected": 50,
+        "abstained": 0,
+        "falsely_passed": 0
+      },
+      "Soybean": {
+        "total": 50,
+        "rejected": 50,
+        "abstained": 0,
+        "falsely_passed": 0
+      },
+      "Squash": {
+        "total": 50,
+        "rejected": 49,
+        "abstained": 0,
+        "falsely_passed": 1
+      },
+      "Strawberry": {
+        "total": 50,
+        "rejected": 50,
+        "abstained": 0,
+        "falsely_passed": 0
+      }
+    }
+  },
+  "cohort_3_real_non_leaf_stress_cohort": {
+    "cohort_name": "Real Non-Leaf Visual Stress Cohort",
+    "sample_size": 2,
+    "results": [
+      {
+        "image_name": "china.jpg",
+        "path": "backend/.venv/Lib/site-packages/sklearn/datasets/images/china.jpg",
+        "action": "REJECT_UNSUPPORTED",
+        "predicted_species": "Unsupported",
+        "top1_prob": 99.24,
+        "margin": 98.73,
+        "p_other": 99.24
+      },
+      {
+        "image_name": "flower.jpg",
+        "path": "backend/.venv/Lib/site-packages/sklearn/datasets/images/flower.jpg",
+        "action": "REJECT_UNSUPPORTED",
+        "predicted_species": "Unsupported",
+        "top1_prob": 86.17,
+        "margin": 79.46,
+        "p_other": 86.17
+      }
+    ],
+    "limitation_note": "Only standard sample non-leaf photographs available locally. Complex natural open-world non-foliar images require expanded open-world training data."
+  },
+  "cohort_4_synthetic_perturbation_cohort": {
+    "cohort_name": "Synthetic Perturbation Stress Cohort",
+    "description": "Controlled digital perturbations on 200 manifest test images to evaluate degradation resilience",
+    "transforms": {
+      "gaussian_blur": {
+        "sample_size": 200,
+        "action_counts": {
+          "ACCEPT_STAGE2": 62,
+          "ABSTAIN_UNCERTAIN": 8,
+          "REJECT_UNSUPPORTED": 130,
+          "total": 200
+        },
+        "supported_abstention_rate_percentage": 5.59
+      },
+      "severe_underexposure": {
+        "sample_size": 200,
+        "action_counts": {
+          "ACCEPT_STAGE2": 114,
+          "ABSTAIN_UNCERTAIN": 10,
+          "REJECT_UNSUPPORTED": 76,
+          "total": 200
+        },
+        "supported_abstention_rate_percentage": 6.99
+      },
+      "severe_overexposure": {
+        "sample_size": 200,
+        "action_counts": {
+          "ACCEPT_STAGE2": 127,
+          "ABSTAIN_UNCERTAIN": 2,
+          "REJECT_UNSUPPORTED": 71,
+          "total": 200
+        },
+        "supported_abstention_rate_percentage": 1.4
+      }
+    }
+  },
+  "cohort_5_unfamiliar_open_world_crops": {
+    "cohort_name": "Unfamiliar Open-World Crops (Rice, Wheat, Cotton, Tea, Sugarcane)",
+    "status": "NOT EVALUATED",
+    "rationale": "No real-world image datasets for these non-PlantVillage agricultural crops exist on the local system. In accordance with safety protocol, no synthetic data was fabricated."
+  }
+}

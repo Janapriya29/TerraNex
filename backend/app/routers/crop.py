@@ -1,8 +1,30 @@
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
 
-from bson import ObjectId
+try:
+    from bson import ObjectId
+except ImportError:
+    class ObjectId:
+        def __init__(self, val=None):
+            if val is not None:
+                s = str(val)
+                if len(s) != 24 or not all(c in "0123456789abcdefABCDEF" for c in s):
+                    raise ValueError(f"'{val}' is not a valid ObjectId")
+                self._str = s
+            else:
+                import uuid
+                self._str = uuid.uuid4().hex[:24]
+
+        def __str__(self):
+            return self._str
+
+        def __repr__(self):
+            return f"ObjectId('{self._str}')"
+
+        def __eq__(self, other):
+            return str(self) == str(other)
 
 from app.services.model_service import model_service
 from app.database import (
@@ -62,9 +84,19 @@ def find_user(user_id: str):
         pass
 
     # If it is not an ObjectId, try email
+    norm_email = str(user_id).strip().lower()
     user = users_collection.find_one(
-        {"email": user_id}
+        {"email": norm_email}
     )
+
+    if not user:
+        try:
+            import re
+            user = users_collection.find_one({
+                "email": {"$regex": f"^{re.escape(norm_email)}$", "$options": "i"}
+            })
+        except Exception:
+            pass
 
     if user:
         return user, user["_id"]
@@ -103,7 +135,11 @@ def recommend_crop(data: CropInput):
 def recommend_with_market(data: UserCropInput):
 
     # Find user
-    user, object_id = find_user(data.user_id)
+    object_id = None
+    if data.user_id in ("guest", "demo"):
+        user = {"name": "Demo Guest"}
+    else:
+        user, object_id = find_user(data.user_id)
 
     if not user:
         raise HTTPException(
@@ -112,7 +148,6 @@ def recommend_with_market(data: UserCropInput):
         )
 
     # STEP 1: CROP RECOMMENDATION
-
     recommendations = model_service.recommend_crops(
         N=data.N,
         P=data.P,
@@ -124,25 +159,40 @@ def recommend_with_market(data: UserCropInput):
     )
 
     # STEP 2: MARKET ANALYSIS
-
     market_analysis = model_service.analyze_market(
         recommendations
     )
 
-    
-    # STEP 3: FIND BEST CROP BASED ON AI CONFIDENCE
+    # STEP 3: FIND BEST CROP
+    # Select the best crop balancing agronomic suitability and market viability.
+    # If market data exists for a candidate, use its combined_score (0.70 * conf + 0.30 * price_score).
+    # If market data is absent, score is based on agronomic suitability (0.70 * conf).
+    # This prevents a low-confidence or trace crop with market data from silently displacing
+    # the model's top agronomic recommendation.
 
     best_overall_crop = None
 
     if recommendations:
-        best_recommendation = max(
-            recommendations,
-            key=lambda item: float(item.get("confidence", 0))
-        )
+        market_score_map = {
+            item["crop"].lower().strip(): float(item.get("combined_score", 0))
+            for item in market_analysis
+        }
 
-        best_overall_crop = best_recommendation["crop"]
+        best_score = -1.0
+        for item in recommendations:
+            crop_name = item["crop"].lower().strip()
+            confidence = float(item.get("confidence", 0))
+
+            score = market_score_map.get(
+                crop_name,
+                round(0.70 * confidence, 2)
+            )
+
+            if score > best_score:
+                best_score = score
+                best_overall_crop = item["crop"]
+
     # STEP 4: SAVE HISTORY
-
     history_data = {
         "user_id": object_id,
 
@@ -157,32 +207,29 @@ def recommend_with_market(data: UserCropInput):
         },
 
         "recommendations": recommendations,
-
         "market_analysis": market_analysis,
-
         "best_overall_crop": best_overall_crop,
-
         "created_at": datetime.now()
     }
 
-    result = crop_history_collection.insert_one(
-        history_data
-    )
+    if object_id:
+        result = crop_history_collection.insert_one(
+            history_data
+        )
+        history_id = str(result.inserted_id)
+    else:
+        history_id = "demo_guest"
 
     # STEP 5: RETURN RESULT
-
     return {
         "message": (
             "Crop recommendation and market analysis "
             "completed and saved successfully!"
         ),
 
-        "history_id": str(result.inserted_id),
-
+        "history_id": history_id,
         "recommendations": recommendations,
-
         "market_analysis": market_analysis,
-
         "best_overall_crop": best_overall_crop
     }
 
@@ -212,7 +259,6 @@ def get_crop_history(user_id: str):
 
     # Convert MongoDB ObjectIds to strings
     for item in history:
-
         item["_id"] = str(item["_id"])
 
         if "user_id" in item:

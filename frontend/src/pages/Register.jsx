@@ -1,12 +1,14 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sprout, User, Mail, Lock, UserPlus } from "lucide-react";
 import { registerUser } from "../services/api";
+import { useLanguage } from "../context/LanguageContext";
+import LanguageSelector from "../components/common/LanguageSelector";
 import "./Auth.css";
 
 function Register() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,8 +26,11 @@ function Register() {
     setMessage("");
     setMessageType("");
 
-    if (!name.trim() || !email.trim() || !password) {
-      setMessage("Please fill in all fields.");
+    const trimmedName = name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!trimmedName || !normalizedEmail || !password) {
+      setMessage(t("auth.registerRequiredFields", "Please fill in all fields."));
       setMessageType("error");
       return;
     }
@@ -34,12 +39,12 @@ function Register() {
       setLoading(true);
 
       const data = await registerUser(
-        name.trim(),
-        email.trim(),
+        trimmedName,
+        normalizedEmail,
         password
       );
 
-      setMessage(data.message || "Account created successfully!");
+      setMessage(data.message || t("auth.registerSuccess", "Account created successfully!"));
       setMessageType("success");
 
       setTimeout(() => {
@@ -48,7 +53,7 @@ function Register() {
     } catch (error) {
       setMessage(
         error.message ||
-          "Unable to create your account. Please try again."
+        t("auth.registerErrorDefault", "Unable to create your account. Please try again.")
       );
       setMessageType("error");
     } finally {
@@ -60,28 +65,32 @@ function Register() {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-brand">
-          <Link to="/" className="auth-logo">
-            <Sprout size={32} />
-            <span>TerraNex</span>
-          </Link>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "50px" }}>
+            <Link to="/" className="auth-logo" style={{ marginBottom: 0 }}>
+              <Sprout size={32} />
+              <span>TerraNex</span>
+            </Link>
 
-          <h1>Join TerraNex</h1>
+            <LanguageSelector />
+          </div>
+
+          <h1>{t("auth.registerTitle", "Join TerraNex")}</h1>
 
           <p>
-            Create your account and start making smarter farming decisions.
+            {t("auth.registerSubtitle", "Create your account and start making smarter farming decisions.")}
           </p>
         </div>
 
         <div className="auth-card">
-          <h2>Create Account</h2>
+          <h2>{t("auth.registerCardTitle", "Create Account")}</h2>
 
           <p className="auth-subtitle">
-            Enter your details to get started.
+            {t("auth.registerCardSubtitle", "Enter your details to get started.")}
           </p>
 
           <form onSubmit={handleRegister}>
             <div className="input-group">
-              <label htmlFor="register-name">Full Name</label>
+              <label htmlFor="register-name">{t("auth.nameLabel", "Full Name")}</label>
 
               <div className="input-wrapper">
                 <User size={19} />
@@ -89,7 +98,7 @@ function Register() {
                 <input
                   id="register-name"
                   type="text"
-                  placeholder="Enter your name"
+                  placeholder={t("auth.namePlaceholder", "Enter your name")}
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   autoComplete="name"
@@ -100,7 +109,7 @@ function Register() {
             </div>
 
             <div className="input-group">
-              <label htmlFor="register-email">Email Address</label>
+              <label htmlFor="register-email">{t("auth.emailLabel", "Email Address")}</label>
 
               <div className="input-wrapper">
                 <Mail size={19} />
@@ -108,7 +117,7 @@ function Register() {
                 <input
                   id="register-email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={t("auth.emailPlaceholder", "Enter your email")}
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   autoComplete="email"
@@ -119,7 +128,7 @@ function Register() {
             </div>
 
             <div className="input-group">
-              <label htmlFor="register-password">Password</label>
+              <label htmlFor="register-password">{t("auth.passwordLabel", "Password")}</label>
 
               <div className="input-wrapper">
                 <Lock size={19} />
@@ -127,7 +136,7 @@ function Register() {
                 <input
                   id="register-password"
                   type="password"
-                  placeholder="Create a password"
+                  placeholder={t("auth.registerPasswordPlaceholder", "Create a password")}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   autoComplete="new-password"
@@ -139,7 +148,7 @@ function Register() {
 
             {message && (
               <p
-                className="auth-message"
+                className={`auth-message ${messageType}`.trim()}
                 role="status"
                 aria-live="polite"
               >
@@ -149,9 +158,7 @@ function Register() {
 
             {loading && (
               <p role="status" aria-live="polite">
-                Your account is being created. The server may take a
-                little longer to respond if it has been inactive.
-                Please wait...
+                {t("auth.registerWaitingMessage", "Your account is being created. The server may take a little longer to respond if it has been inactive. Please wait...")}
               </p>
             )}
 
@@ -162,14 +169,14 @@ function Register() {
             >
               <UserPlus size={19} />
 
-              {loading ? "Creating Account..." : "Create Account"}
+              {loading ? t("auth.creatingAccount", "Creating Account...") : t("auth.registerBtn", "Create Account")}
             </button>
           </form>
 
           <p className="auth-switch">
-            Already have an account?{" "}
+            {t("auth.hasAccount", "Already have an account?")}{" "}
             <Link to="/login">
-              Login
+              {t("auth.loginLink", "Login")}
             </Link>
           </p>
         </div>

@@ -1,0 +1,148 @@
+/* ==========================================================================
+   TERRANEX DESIGN TOKENS
+   Nature-Tech palette, responsive typography scale, elevation & spacing
+   ========================================================================== */
+
+:root {
+  /* --- Light Theme Palette (Default) --- */
+  --color-primary-dark: #123B2A;
+  --color-primary: #1F6B45;
+  --color-primary-hover: #165233;
+  --color-accent-lime: #B7E36A;
+  --color-accent-lime-hover: #a5d355;
+  --color-mint: #E8F3E8;
+  --color-cream: #F7F5ED;
+  --color-soil: #806548;
+  
+  --color-bg-page: #F7F5ED;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-elevated: #F1F6F1;
+  --color-bg-glass: rgba(255, 255, 255, 0.85);
+
+  --color-text-main: #192B22;
+  --color-text-muted: #68756C;
+  --color-text-inverse: #FFFFFF;
+
+  --color-border: #DCE5DB;
+  --color-border-hover: #BCCEC0;
+
+  --color-error: #B42318;
+  --color-error-bg: #FEF3F2;
+  --color-success: #217647;
+  --color-success-bg: #ECFDF3;
+  --color-warning: #B54708;
+  --color-warning-bg: #FFFAEB;
+
+  /* --- Typography --- */
+  --font-heading: 'Outfit', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+  --font-size-5xl: 3rem;      /* 48px */
+  --font-size-6xl: 3.75rem;   /* 60px */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.15;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.65;
+
+  /* --- Spacing Scale --- */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-20: 5rem;    /* 80px */
+  --space-24: 6rem;    /* 96px */
+
+  /* --- Border Radii --- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-full: 9999px;
+
+  /* --- Shadows & Elevations --- */
+  --shadow-xs: 0 1px 2px rgba(18, 59, 42, 0.05);
+  --shadow-sm: 0 2px 6px rgba(18, 59, 42, 0.06);
+  --shadow-md: 0 4px 16px rgba(18, 59, 42, 0.08);
+  --shadow-lg: 0 10px 30px rgba(18, 59, 42, 0.10);
+  --shadow-xl: 0 20px 40px rgba(18, 59, 42, 0.14);
+
+  /* --- Transitions --- */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- Focus Ring --- */
+  --focus-ring: 0 0 0 3px rgba(183, 227, 106, 0.6);
+
+  /* --- Z-Index Levels --- */
+  --z-base: 1;
+  --z-floating: 10;
+  --z-sticky: 100;
+  --z-drawer: 500;
+  --z-modal: 1000;
+  --z-toast: 1500;
+
+  /* --- Layout Max Widths --- */
+  --container-max: 1240px;
+  --container-pad: 1.5rem;
+}
+
+/* --- Dark Theme Overrides --- */
+[data-theme="dark"],
+.dark {
+  --color-primary-dark: #08160F;
+  --color-primary: #2A8B5B;
+  --color-primary-hover: #34A86E;
+  --color-accent-lime: #C8F07E;
+  --color-accent-lime-hover: #d7f59d;
+  --color-mint: #153223;
+  --color-cream: #0E2017;
+  --color-soil: #A88663;
+
+  --color-bg-page: #0C1E15;
+  --color-bg-surface: #132B20;
+  --color-bg-elevated: #1B3B2C;
+  --color-bg-glass: rgba(19, 43, 32, 0.90);
+
+  --color-text-main: #EDF5EE;
+  --color-text-muted: #A2B6A7;
+  --color-text-inverse: #0C1E15;
+
+  --color-border: #234734;
+  --color-border-hover: #336148;
+
+  --color-error: #F97066;
+  --color-error-bg: #401A18;
+  --color-success: #47CD89;
+  --color-success-bg: #123824;
+  --color-warning: #FEC84B;
+  --color-warning-bg: #3B2B0A;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.40);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.65);
+
+  --focus-ring: 0 0 0 3px rgba(200, 240, 126, 0.5);
+}

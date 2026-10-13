@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
 from app.routers import disease, crop, market, user
+from app.config import UPLOAD_DIR
 
 
 # =====================================
@@ -11,7 +12,7 @@ from app.routers import disease, crop, market, user
 # =====================================
 
 app = FastAPI(
-    title="AgriVoice API",
+    title="TerraNex API",
     description="AI-powered agriculture assistance system",
     version="1.0.0"
 )
@@ -21,19 +22,28 @@ app = FastAPI(
 # CORS CONFIGURATION
 # =====================================
 
+import os
+
+DEFAULT_CORS_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://[::1]:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://TerraNex-frontend.onrender.com",
+]
+
+_cors_env = os.getenv("CORS_ORIGINS")
+if _cors_env:
+    cors_origins = [origin.strip() for origin in _cors_env.split(",") if origin.strip()]
+else:
+    cors_origins = DEFAULT_CORS_ORIGINS
+
 app.add_middleware(
     CORSMiddleware,
-
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://agrivoice-frontend.onrender.com",
-    ],
-
+    allow_origins=cors_origins,
     allow_credentials=True,
-
     allow_methods=["*"],
-
     allow_headers=["*"],
 )
 
@@ -41,10 +51,6 @@ app.add_middleware(
 # =====================================
 # UPLOAD DIRECTORY
 # =====================================
-
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-UPLOAD_DIR = BASE_DIR / "uploads"
 
 UPLOAD_DIR.mkdir(
     parents=True,
@@ -84,7 +90,7 @@ app.include_router(market.router)
 def root():
 
     return {
-        "message": "Welcome to AgriVoice API",
+        "message": "Welcome to TerraNex API",
         "status": "running"
     }
 

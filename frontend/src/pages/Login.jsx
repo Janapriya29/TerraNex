@@ -8,16 +8,20 @@ import {
 } from "lucide-react";
 
 import { loginUser } from "../services/api";
+import { useLanguage } from "../context/LanguageContext";
+import LanguageSelector from "../components/common/LanguageSelector";
 import "./Auth.css";
 
 function Login() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
 
   // =====================================
   // LOGIN
@@ -27,10 +31,14 @@ function Login() {
     event.preventDefault();
 
     setMessage("");
+    setMessageType("");
+
+    const normalizedEmail = email.trim().toLowerCase();
 
     // Check empty fields
-    if (!email || !password) {
-      setMessage("Please enter your email and password.");
+    if (!normalizedEmail || !password) {
+      setMessage(t("auth.loginRequiredFields", "Please enter your email and password."));
+      setMessageType("error");
       return;
     }
 
@@ -39,7 +47,7 @@ function Login() {
 
       // Call backend login API
       const data = await loginUser(
-        email,
+        normalizedEmail,
         password
       );
 
@@ -47,22 +55,12 @@ function Login() {
       // SAVE USER SESSION
       // =====================================
 
-      localStorage.setItem(
-        "user_id",
-        data.user_id
-      );
+      localStorage.setItem("user_id", data.user_id);
+      localStorage.setItem("user_name", data.name);
+      localStorage.setItem("user_email", data.email);
 
-      localStorage.setItem(
-        "user_name",
-        data.name
-      );
-
-      localStorage.setItem(
-        "user_email",
-        data.email
-      );
-
-      setMessage("Login successful!");
+      setMessage(t("auth.loginSuccess", "Login successful!"));
+      setMessageType("success");
 
       // Go to dashboard
       navigate("/dashboard", {
@@ -70,16 +68,13 @@ function Login() {
       });
 
     } catch (error) {
-
       setMessage(
         error.message ||
-        "Login failed. Please try again."
+        t("auth.loginErrorDefault", "Login failed. Please check your credentials.")
       );
-
+      setMessageType("error");
     } finally {
-
       setLoading(false);
-
     }
   };
 
@@ -94,24 +89,25 @@ function Login() {
 
         <div className="auth-brand">
 
-          <Link
-            to="/"
-            className="auth-logo"
-          >
-            <Sprout size={32} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "50px" }}>
+            <Link
+              to="/"
+              className="auth-logo"
+              style={{ marginBottom: 0 }}
+            >
+              <Sprout size={32} />
+              <span>TerraNex</span>
+            </Link>
 
-            <span>
-              TerraNex
-            </span>
-          </Link>
+            <LanguageSelector />
+          </div>
 
           <h1>
-            Welcome Back!
+            {t("auth.loginTitle", "Welcome Back!")}
           </h1>
 
           <p>
-            Login to continue your smart
-            farming journey.
+            {t("auth.loginSubtitle", "Login to continue your smart farming journey.")}
           </p>
 
         </div>
@@ -124,12 +120,11 @@ function Login() {
         <div className="auth-card">
 
           <h2>
-            Login
+            {t("auth.loginCardTitle", "Login")}
           </h2>
 
           <p className="auth-subtitle">
-            Enter your details to access
-            your account.
+            {t("auth.loginCardSubtitle", "Enter your details to access your account.")}
           </p>
 
 
@@ -148,8 +143,8 @@ function Login() {
 
             <div className="input-group">
 
-              <label>
-                Email Address
+              <label htmlFor="login-email">
+                {t("auth.emailLabel", "Email Address")}
               </label>
 
               <div className="input-wrapper">
@@ -159,8 +154,8 @@ function Login() {
                 <input
                   type="email"
                   name="email"
-                  id="email"
-                  placeholder="Enter your email"
+                  id="login-email"
+                  placeholder={t("auth.emailPlaceholder", "Enter your email")}
                   value={email}
                   onChange={(event) =>
                     setEmail(event.target.value)
@@ -180,8 +175,8 @@ function Login() {
 
             <div className="input-group">
 
-              <label>
-                Password
+              <label htmlFor="login-password">
+                {t("auth.passwordLabel", "Password")}
               </label>
 
               <div className="input-wrapper">
@@ -191,8 +186,8 @@ function Login() {
                 <input
                   type="password"
                   name="password"
-                  id="password"
-                  placeholder="Enter your password"
+                  id="login-password"
+                  placeholder={t("auth.passwordPlaceholder", "Enter your password")}
                   value={password}
                   onChange={(event) =>
                     setPassword(event.target.value)
@@ -211,7 +206,11 @@ function Login() {
             ================================= */}
 
             {message && (
-              <p className="auth-message">
+              <p
+                className={`auth-message ${messageType}`.trim()}
+                role="status"
+                aria-live="polite"
+              >
                 {message}
               </p>
             )}
@@ -230,8 +229,8 @@ function Login() {
               <LogIn size={19} />
 
               {loading
-                ? "Logging in..."
-                : "Login"}
+                ? t("auth.loggingIn", "Logging in...")
+                : t("auth.loginBtn", "Login")}
 
             </button>
 
@@ -244,10 +243,10 @@ function Login() {
 
           <p className="auth-switch">
 
-            Don't have an account?{" "}
+            {t("auth.noAccount", "Don't have an account?")}{" "}
 
             <Link to="/register">
-              Create Account
+              {t("auth.registerHere", "Register here")}
             </Link>
 
           </p>
