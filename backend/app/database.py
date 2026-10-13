@@ -107,9 +107,10 @@ is_connected = False
 
 if HAS_PYMONGO:
     try:
+        timeout_ms = int(os.getenv("MONGODB_TIMEOUT_MS", "10000"))
         client = MongoClient(
             MONGODB_URL,
-            serverSelectionTimeoutMS=3000
+            serverSelectionTimeoutMS=timeout_ms
         )
         client.admin.command("ping")
         db = client["TerraNex"]

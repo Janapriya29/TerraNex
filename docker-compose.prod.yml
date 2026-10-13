@@ -1,0 +1,67 @@
+services:
+  # ============================================================================
+  # Frontend Web Service (React SPA + Nginx Reverse Proxy)
+  # Acts as the single public gateway on port 80 (or custom FRONTEND_PORT)
+  # ============================================================================
+  frontend:
+    image: ${FRONTEND_IMAGE:-ghcr.io/janapriya29/terranex-frontend:latest}
+    container_name: terranex_frontend
+    restart: unless-stopped
+    ports:
+      # Exposes HTTP on host port (defaults to 80; can be overridden via FRONTEND_PORT in .env)
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - terranex_prod_net
+
+  # ============================================================================
+  # Backend API Service (FastAPI + ML Models)
+  # INTERNAL ONLY - NOT published to host to avoid public exposure and collisions
+  # ============================================================================
+  backend:
+    image: ${BACKEND_IMAGE:-ghcr.io/janapriya29/terranex-backend:latest}
+    container_name: terranex_backend
+    restart: unless-stopped
+    # NOTICE: No ports mapping. Port 8000 is accessible only within terranex_prod_net.
+    environment:
+      # MongoDB connection URI (e.g., MongoDB Atlas SRV URI or managed cluster)
+      - MONGODB_URL=${MONGODB_URL}
+      - MONGODB_TIMEOUT_MS=${MONGODB_TIMEOUT_MS:-10000}
+      - MODEL_DIR=/app/models
+      - UPLOAD_DIR=/app/uploads
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost,http://localhost:80,http://127.0.0.1:80}
+      - ENABLE_STAGE1_SPECIES=true
+    volumes:
+      # Persistent storage volume for plant leaf image uploads
+      - terranex_prod_uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - terranex_prod_net
+
+# ==============================================================================
+# Persistent Named Storage Volumes
+# ==============================================================================
+volumes:
+  terranex_prod_uploads:
+    name: terranex_prod_uploads
+
+# ==============================================================================
+# Isolated Production Bridge Network
+# ==============================================================================
+networks:
+  terranex_prod_net:
+    name: terranex_prod_net
+    driver: bridge
