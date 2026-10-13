@@ -18,12 +18,22 @@ else
     echo "  [NOTE] Port 5001 is not currently listening. Continuing safely."
 fi
 
-# 2. Option 2 Capacity Optimization: Free RAM & Setup Swap
-echo "[2/7] Optimizing host capacity (Option 2)..."
+# 2. Disk Space Pre-Check & Option 2 Capacity Optimization
+echo "[2/6] Checking storage and optimizing host capacity..."
+FREE_DISK_KB=$(df / --output=avail | tail -n 1)
+FREE_DISK_GB=$((FREE_DISK_KB / 1024 / 1024))
+echo "  Available Root Disk: ${FREE_DISK_GB} GB"
+if [ "$FREE_DISK_GB" -lt 4 ]; then
+    echo "  [ABORT] Insufficient disk space: only ${FREE_DISK_GB} GB available."
+    echo "  At least 4 GB free disk is required to safely provision swap and pull images."
+    exit 1
+fi
+
 if docker ps --format '{{.Names}}' 2>/dev/null | grep -q -i "minikube"; then
     echo "  [ACTION] Pausing/stopping Minikube container to free ~1.1 GB RAM..."
     docker stop minikube || true
     echo "  [OK] Minikube stopped safely. AlzheimerML (port 5001) is untouched."
+    echo "  [NOTE] To restart Minikube later when needed, run: 'minikube start' or 'docker start minikube'."
 else
     echo "  [OK] Minikube is not currently running."
 fi
@@ -43,19 +53,10 @@ else
     echo "  [OK] Swap already active (${SWAP_TOTAL_KB} KB)."
 fi
 
-# Prune dangling images to ensure maximum disk space
-echo "  [ACTION] Pruning dangling Docker cache to free disk space..."
-docker image prune -f || true
-
-# 3. Check Headroom
-echo "[3/7] Verifying system headroom post-optimization..."
-FREE_DISK_KB=$(df / --output=avail | tail -n 1)
-FREE_DISK_GB=$((FREE_DISK_KB / 1024 / 1024))
-echo "  Available Root Disk: ${FREE_DISK_GB} GB"
 free -h
 
-# 4. Environment Configuration Check
-echo "[4/7] Checking environment configuration (.env)..."
+# 3. Environment Configuration Check
+echo "[3/6] Checking environment configuration (.env)..."
 if [ ! -f ".env" ]; then
     echo "  [ERROR] .env file not found!"
     echo "  Please create a .env file containing your production settings."
@@ -66,31 +67,46 @@ if [ ! -f ".env" ]; then
     exit 1
 fi
 
-# 5. Pull Prebuilt Images from GHCR (Zero on-server compilation)
-echo "[5/7] Pulling prebuilt images from GitHub Container Registry..."
+# Extract FRONTEND_PORT from .env (defaults to 80 if not specified)
+TARGET_PORT=$(grep -E '^[[:space:]]*FRONTEND_PORT=' .env | head -n 1 | cut -d= -f2 | tr -d ' "\r' || true)
+FRONTEND_PORT=${TARGET_PORT:-80}
+echo "  Target frontend port: ${FRONTEND_PORT}"
+
+# 4. Pull Prebuilt Images from GHCR (Zero on-server compilation)
+echo "[4/6] Pulling prebuilt images from GitHub Container Registry..."
 docker compose -f docker-compose.prod.yml pull
 
-# 6. Launch Isolated TerraNex Containers
-echo "[6/7] Starting TerraNex container stack..."
+# 5. Launch Isolated TerraNex Containers
+echo "[5/6] Starting TerraNex container stack..."
 docker compose -f docker-compose.prod.yml up -d
 
-# 7. Post-deployment Health & Coexistence Verification
-echo "[7/7] Verifying health and service isolation..."
+# 6. Post-deployment Health & Coexistence Verification
+echo "[6/6] Verifying health and service isolation..."
 sleep 5
 docker compose -f docker-compose.prod.yml ps
 
-echo "Checking TerraNex health probe..."
-MAX_RETRIES=12
+echo "Checking TerraNex health probes on port ${FRONTEND_PORT}..."
+MAX_RETRIES=15
 RETRY=0
+HEALTHY=false
 while [ $RETRY -lt $MAX_RETRIES ]; do
-    if curl -s -f http://127.0.0.1:${FRONTEND_PORT:-80}/health > /dev/null 2>&1; then
-        echo "  [SUCCESS] TerraNex is healthy on port ${FRONTEND_PORT:-80}!"
+    HTTP_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${FRONTEND_PORT}/health" 2>/dev/null || echo "000")
+    HTTP_ROOT=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${FRONTEND_PORT}/" 2>/dev/null || echo "000")
+    if [ "$HTTP_HEALTH" = "200" ] && [ "$HTTP_ROOT" = "200" ]; then
+        echo "  [SUCCESS] TerraNex is healthy! (/health HTTP 200, / HTTP 200)"
+        HEALTHY=true
         break
     fi
-    echo "  Waiting for container healthcheck (${RETRY}/${MAX_RETRIES})..."
+    echo "  Waiting for container healthchecks (Attempt ${RETRY}/${MAX_RETRIES}: /health=${HTTP_HEALTH}, /=${HTTP_ROOT})..."
     sleep 5
     RETRY=$((RETRY + 1))
 done
+
+if [ "$HEALTHY" != "true" ]; then
+    echo "  [ERROR] Healthcheck timed out or failed. Container logs:"
+    docker compose -f docker-compose.prod.yml logs --tail=30
+    exit 1
+fi
 
 # Confirm AlzheimerML is still responsive
 if sudo ss -tulpn | grep -q ":5001"; then

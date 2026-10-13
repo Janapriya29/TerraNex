@@ -102,6 +102,8 @@ MONGODB_URL = os.getenv(
     "mongodb://localhost:27017"
 )
 
+REQUIRE_MONGODB = os.getenv("REQUIRE_MONGODB", "false").strip().lower() in ("true", "1", "yes")
+
 client = None
 is_connected = False
 
@@ -120,10 +122,14 @@ if HAS_PYMONGO:
         is_connected = True
         print("MongoDB connected successfully!")
     except Exception as e:
-        print("MongoDB connection failed, falling back to offline collections:", e)
+        print("MongoDB connection failed:", e)
         is_connected = False
+        if REQUIRE_MONGODB:
+            raise RuntimeError(f"CRITICAL: Failed to connect to MongoDB and REQUIRE_MONGODB=true. Error: {e}")
 
 if not is_connected:
+    if REQUIRE_MONGODB:
+        raise RuntimeError("CRITICAL: MongoDB is unavailable or pymongo is not installed, and REQUIRE_MONGODB=true.")
     print("Warning: pymongo is not installed or MongoDB is unavailable. Using offline mock collections.")
     client = None
     db = {

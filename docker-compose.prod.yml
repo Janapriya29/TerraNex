@@ -35,6 +35,7 @@ services:
       # MongoDB connection URI (e.g., MongoDB Atlas SRV URI or managed cluster)
       - MONGODB_URL=${MONGODB_URL}
       - MONGODB_TIMEOUT_MS=${MONGODB_TIMEOUT_MS:-10000}
+      - REQUIRE_MONGODB=true
       - MODEL_DIR=/app/models
       - UPLOAD_DIR=/app/uploads
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost,http://localhost:80,http://127.0.0.1:80}

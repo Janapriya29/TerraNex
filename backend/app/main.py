@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
 from app.routers import disease, crop, market, user
 from app.config import UPLOAD_DIR
+from app.database import is_connected, REQUIRE_MONGODB
 
 
 # =====================================
@@ -101,7 +103,17 @@ def root():
 
 @app.get("/health")
 def health_check():
+    if REQUIRE_MONGODB and not is_connected:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "database": "disconnected",
+                "error": "MongoDB is required in production but disconnected"
+            }
+        )
 
     return {
-        "status": "healthy"
+        "status": "healthy",
+        "database": "connected" if is_connected else "offline_mock"
     }
