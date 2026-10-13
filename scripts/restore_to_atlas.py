@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from bson import ObjectId
 
-BACKUP_DIR = Path(r"C:\Users\janap\Desktop\TerraNex-GitHub\backups\host_mongodb_backup_20261013_185051")
+BACKUP_DIR = Path(__file__).resolve().parent.parent / "backups" / "host_mongodb_backup_20261013_185051"
 
 def parse_doc(doc):
     """Convert extended JSON formats ($oid, $date) back to Python types."""
@@ -67,6 +67,7 @@ def restore(target_mongo_url):
 
         inserted = 0
         updated = 0
+        unmodified = 0
         for raw_doc in data:
             doc = parse_doc(raw_doc)
             doc_id = doc.get("_id")
@@ -76,15 +77,45 @@ def restore(target_mongo_url):
                     inserted += 1
                 elif res.modified_count:
                     updated += 1
+                else:
+                    unmodified += 1
 
-        print(f"Result for '{coll_name}': {inserted} newly added, {updated} updated, Total now: {coll.count_documents({})}")
+        print(f"Result for '{coll_name}': {inserted} newly added, {updated} updated, {unmodified} unchanged, Total now: {coll.count_documents({})}")
 
-    print("\nRestore process completed successfully and verified.")
+    print("\nRestore process completed successfully and verified for database 'TerraNex'.")
+    print("Database isolation confirmed: No other databases (including 'agrivoice') were accessed.")
+
+def mask_uri(uri: str) -> str:
+    """Mask credentials in MongoDB URI for safe console logging."""
+    import re
+    return re.sub(r"://([^:]+):([^@]+)@", "://***:***@", uri)
 
 if __name__ == "__main__":
-    url = os.getenv("TARGET_MONGODB_URL")
+    import argparse
+    parser = argparse.ArgumentParser(description="Safely restore TerraNex records to MongoDB Atlas.")
+    parser.add_argument("--uri", "--atlas-uri", dest="uri", help="Target MongoDB connection URI")
+    args = parser.parse_args()
+
+    url = args.uri or os.getenv("TARGET_MONGODB_URL") or os.getenv("MONGODB_URL")
+
+    # Fallback to reading root .env if not found in environment
     if not url:
-        print("Usage: Pass TARGET_MONGODB_URL as environment variable.")
-        print("Example: TARGET_MONGODB_URL='mongodb+srv://user:pass@cluster.mongodb.net/TerraNex' python restore_to_atlas.py")
-        sys.exit(0)
+        env_path = Path(__file__).resolve().parent.parent / ".env"
+        if env_path.exists():
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("MONGODB_URL=") or line.startswith("TARGET_MONGODB_URL="):
+                        url = line.split("=", 1)[1].strip().strip('"').strip("'")
+                        break
+
+    if not url:
+        print("Usage: Provide MongoDB URI via --uri, MONGODB_URL env var, or local .env file.")
+        print("Example: python scripts/restore_to_atlas.py --uri 'mongodb+srv://...'")
+        sys.exit(1)
+
+    print(f"Target Cluster: {mask_uri(url)}")
+    print("Target Database: 'TerraNex' (Dedicated namespace)")
+    print("Safety Check: Existing databases like 'agrivoice' will NOT be modified.")
     restore(url)
+

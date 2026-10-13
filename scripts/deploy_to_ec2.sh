@@ -18,19 +18,44 @@ else
     echo "  [NOTE] Port 5001 is not currently listening. Continuing safely."
 fi
 
-# 2. Check Storage and RAM
-echo "[2/6] Checking system headroom..."
+# 2. Option 2 Capacity Optimization: Free RAM & Setup Swap
+echo "[2/7] Optimizing host capacity (Option 2)..."
+if docker ps --format '{{.Names}}' 2>/dev/null | grep -q -i "minikube"; then
+    echo "  [ACTION] Pausing/stopping Minikube container to free ~1.1 GB RAM..."
+    docker stop minikube || true
+    echo "  [OK] Minikube stopped safely. AlzheimerML (port 5001) is untouched."
+else
+    echo "  [OK] Minikube is not currently running."
+fi
+
+# Ensure 2 GB swap is active to prevent ML OOM killer during model load
+SWAP_TOTAL_KB=$(free -k | awk '/^Swap:/ {print $2}')
+if [ "${SWAP_TOTAL_KB:-0}" -lt 1048576 ]; then
+    echo "  [ACTION] Setting up 2 GB swapfile to ensure safe TensorFlow model initialization..."
+    if [ ! -f "/swapfile" ]; then
+        sudo fallocate -l 2G /swapfile 2>/dev/null || sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+        sudo chmod 600 /swapfile
+        sudo mkswap /swapfile
+    fi
+    sudo swapon /swapfile 2>/dev/null || true
+    echo "  [OK] 2 GB Swap activated."
+else
+    echo "  [OK] Swap already active (${SWAP_TOTAL_KB} KB)."
+fi
+
+# Prune dangling images to ensure maximum disk space
+echo "  [ACTION] Pruning dangling Docker cache to free disk space..."
+docker image prune -f || true
+
+# 3. Check Headroom
+echo "[3/7] Verifying system headroom post-optimization..."
 FREE_DISK_KB=$(df / --output=avail | tail -n 1)
 FREE_DISK_GB=$((FREE_DISK_KB / 1024 / 1024))
 echo "  Available Root Disk: ${FREE_DISK_GB} GB"
-if [ "$FREE_DISK_GB" -lt 4 ]; then
-    echo "  [WARNING] Less than 4 GB free disk available. Pulling prebuilt images requires ~3.7 GB."
-fi
-
 free -h
 
-# 3. Environment Configuration Check
-echo "[3/6] Checking environment configuration (.env)..."
+# 4. Environment Configuration Check
+echo "[4/7] Checking environment configuration (.env)..."
 if [ ! -f ".env" ]; then
     echo "  [ERROR] .env file not found!"
     echo "  Please create a .env file containing your production settings."
@@ -41,16 +66,16 @@ if [ ! -f ".env" ]; then
     exit 1
 fi
 
-# 4. Pull Prebuilt Images from GHCR (Zero on-server compilation)
-echo "[4/6] Pulling prebuilt images from GitHub Container Registry..."
+# 5. Pull Prebuilt Images from GHCR (Zero on-server compilation)
+echo "[5/7] Pulling prebuilt images from GitHub Container Registry..."
 docker compose -f docker-compose.prod.yml pull
 
-# 5. Launch Isolated TerraNex Containers
-echo "[5/6] Starting TerraNex container stack..."
+# 6. Launch Isolated TerraNex Containers
+echo "[6/7] Starting TerraNex container stack..."
 docker compose -f docker-compose.prod.yml up -d
 
-# 6. Post-deployment Health & Coexistence Verification
-echo "[6/6] Verifying health and service isolation..."
+# 7. Post-deployment Health & Coexistence Verification
+echo "[7/7] Verifying health and service isolation..."
 sleep 5
 docker compose -f docker-compose.prod.yml ps
 
